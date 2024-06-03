@@ -1,0 +1,249 @@
+/* General styles */
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.bg-dark {
+    background-color: #0D0D0D!important;
+    color: #ffffff;
+}
+
+.bg-light {
+    background-color: #f8f9fa!important;
+    color: #000000;
+}
+
+.fa, .fa-brands, .fa-classic, .fa-regular, .fa-sharp, .fa-solid, .fab, .far, .fas {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    line-height: 1;
+    text-rendering: auto;
+    color: #fff;
+}
+
+.col-md-9.ml-sm-auto.col-lg-10.px-4 {
+    background-color: #171717!important;
+}
+
+/* Light mode styles */
+.mode-light {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.mode-light .sidebar {
+    background-color: #f8f9fa;
+    color: #000000;
+}
+
+.mode-light .navbar {
+    background-color: #f8f9fa;
+    color: #000000;
+}
+
+.mode-light .chatbox, .mode-light .file-preview {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Dark mode styles */
+.mode-dark {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.mode-dark .sidebar {
+    background-color: #1c1c1c;
+    color: #ffffff;
+}
+
+.mode-dark .navbar {
+    background-color: #1c1c1c;
+    color: #ffffff;
+}
+
+.mode-dark .chatbox, .mode-dark .file-preview {
+    background-color: #2c2c2c;
+    color: #ffffff;
+}
+
+/*----- Logo -----*/
+.logo {
+    width: 60px;
+    height: 60px;
+}
+
+.logo-text {
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    color: #000000;
+}
+
+.logo-text-dark {
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/*----- Avatar -----*/
+.avatar {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+.user-message {
+    background-color: #0D1117;
+    color: #ffffff;
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: block; /* Ensure messages are displayed as separate blocks */
+}
+
+.bot-message {
+    background-color: #0D1117;
+    color: #ffffff;
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: block; /* Ensure messages are displayed as separate blocks */
+}
+
+
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+    border-width: .2em;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+}
+
+.file-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.file-preview .delete-file {
+    cursor: pointer;
+    color: red;
+    margin-left: 10px;
+}
+
+/*----- ChatBox -----*/
+#chatbox {
+    height: calc(100vh - 200px); /* Adjust based on your header and footer height */
+    overflow-y: auto;
+}
+
+#chat-form {
+    background: #262626;
+    padding: 10px;
+}
+
+/*----- Sidebar -----*/
+.sidebar {
+    height: 100vh;
+    padding-top: 20px;
+}
+
+.mode-dark .nav .navbar {
+    background-color: #1c1c1c!important;
+    color: #ffffff;
+}
+
+.mode-dark .sidebar {
+    background-color: #1c1c1c;
+    color: #ffffff;
+}
+
+.mode-dark .nav-link {
+    color: #ffffff;
+}
+
+.mode-dark .nav-link:hover {
+    background-color: #2c2c2c;
+}
+
+.mode-dark .form-control {
+    background-color: #2c2c2c;
+    color: #ffffff;
+}
+
+.mode-dark .btn-primary {
+    background-color: #333;
+    border-color: #444;
+}
+
+/*----- File Input -----*/
+.custom-file-input {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.custom-file-input .icon {
+    margin-right: 10px;
+}
+
+.file-preview {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-preview .delete-file {
+    cursor: pointer;
+    color: red;
+    margin-left: 10px;
+}
+
+.dark-mode .file-preview {
+    background-color: #333;
+    color: #ffffff;
+}
+
+.dark-mode .file-preview .delete-file {
+    color: #ffffff;
+}
+
+.footer-warning {
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    margin-top: -20px !important;
+    display: block;
+}
+
+.dark-mode .input#user-input {
+    color: #fff!important;
+}
+input#user-input {
+    color: #fff!important;
+}
+
+.dark-mode .footer-warning {
+    color: #fff!important;
+}
