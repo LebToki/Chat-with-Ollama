@@ -1,0 +1,122 @@
+[
+  {
+    "name": "dolphin-mistral:latest",
+    "description": "dolphin-mistral:latest (3.8 GB)"
+  },
+  {
+    "name": "dolphincoder:15b-starcoder2-q5_K_M",
+    "description": "dolphincoder:15b-starcoder2-q5_K_M (10.6 GB)"
+  },
+  {
+    "name": "hub/crackmac/resume-reviewer:latest",
+    "description": "hub/crackmac/resume-reviewer:latest (3.6 GB)"
+  },
+  {
+    "name": "hub/darkstorm2150/OllamaCreate:latest",
+    "description": "hub/darkstorm2150/OllamaCreate:latest (3.8 GB)"
+  },
+  {
+    "name": "hub/dwbranson/llava-med-image-analysis:latest",
+    "description": "hub/dwbranson/llava-med-image-analysis:latest (4.1 GB)"
+  },
+  {
+    "name": "hub/emilio:latest",
+    "description": "hub/emilio:latest (3.6 GB)"
+  },
+  {
+    "name": "hub/ja3tee/chloe-2.0:latest",
+    "description": "hub/ja3tee/chloe-2.0:latest (4.3 GB)"
+  },
+  {
+    "name": "hub/matteocavestri/aiutino-uncensored:latest",
+    "description": "hub/matteocavestri/aiutino-uncensored:latest (3.8 GB)"
+  },
+  {
+    "name": "hub/mejuez/sellermaid:latest",
+    "description": "hub/mejuez/sellermaid:latest (3.8 GB)"
+  },
+  {
+    "name": "hub/nixonpolska/image-to-stable-diffusion-prompt-generator:latest",
+    "description": "hub/nixonpolska/image-to-stable-diffusion-prompt-generator:latest (18.8 GB)"
+  },
+  {
+    "name": "hub/plagiarism-checker:latest",
+    "description": "hub/plagiarism-checker:latest (3.6 GB)"
+  },
+  {
+    "name": "hub/screenwriter:latest",
+    "description": "hub/screenwriter:latest (3.8 GB)"
+  },
+  {
+    "name": "hub/stewart/multi-agent:latest",
+    "description": "hub/stewart/multi-agent:latest (3.6 GB)"
+  },
+  {
+    "name": "hub/storyteller:latest",
+    "description": "hub/storyteller:latest (3.6 GB)"
+  },
+  {
+    "name": "hub/sunny04/code-companion:latest",
+    "description": "hub/sunny04/code-companion:latest (10.6 GB)"
+  },
+  {
+    "name": "hub/ten-tweets:latest",
+    "description": "hub/ten-tweets:latest (4.3 GB)"
+  },
+  {
+    "name": "hub/vianch/codewriter:latest",
+    "description": "hub/vianch/codewriter:latest (4.3 GB)"
+  },
+  {
+    "name": "hub/web-design-consultant:latest",
+    "description": "hub/web-design-consultant:latest (3.8 GB)"
+  },
+  {
+    "name": "hub/zillomab/llama3-uncensored:latest",
+    "description": "hub/zillomab/llama3-uncensored:latest (4.3 GB)"
+  },
+  {
+    "name": "llama2-uncensored:latest",
+    "description": "llama2-uncensored:latest (3.6 GB)"
+  },
+  {
+    "name": "llama2:latest",
+    "description": "llama2:latest (3.6 GB)"
+  },
+  {
+    "name": "llama3:latest",
+    "description": "llama3:latest (4.3 GB)"
+  },
+  {
+    "name": "llava:7b-v1.6-vicuna-q4_0",
+    "description": "llava:7b-v1.6-vicuna-q4_0 (4.1 GB)"
+  },
+  {
+    "name": "mannix/llama3-uncensored:latest",
+    "description": "mannix/llama3-uncensored:latest (4.3 GB)"
+  },
+  {
+    "name": "mistral:7b",
+    "description": "mistral:7b (3.8 GB)"
+  },
+  {
+    "name": "mistral:latest",
+    "description": "mistral:latest (3.8 GB)"
+  },
+  {
+    "name": "phi3:latest",
+    "description": "phi3:latest (2.2 GB)"
+  },
+  {
+    "name": "tinyllama:latest",
+    "description": "tinyllama:latest (0.6 GB)"
+  },
+  {
+    "name": "wizard-vicuna-uncensored:latest",
+    "description": "wizard-vicuna-uncensored:latest (3.6 GB)"
+  },
+  {
+    "name": "yarn-llama2:latest",
+    "description": "yarn-llama2:latest (3.6 GB)"
+  }
+]
