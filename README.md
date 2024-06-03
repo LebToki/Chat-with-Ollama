@@ -4,7 +4,7 @@ Chat with Ollama leverages the Ollama API to provide an interactive chatbot expe
 The project is built with PHP and integrates seamlessly with the Ollama API to deliver a robust and flexible chatbot solution.
 
 
-![image](https://github.com/LebToki/chat-with-ollama/assets/img/CHAT-WITH-OLLAMA-Promo.jpg)
+![image](https://github.com/LebToki/chat-with-ollama/public/assets/img/CHAT-WITH-OLLAMA-Promo.jpg)
 
 ## Prerequisites
 
