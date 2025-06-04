@@ -21,7 +21,7 @@
 			<select id="model-select" class="form-select bg-dark text-white">
 				<option value="">Select a model</option>
 				<?php
-					$modelsJson = @file_get_contents('models/models.json');
+                                       $modelsJson = @file_get_contents(__DIR__ . '/../src/Models/models.json');
 					if ($modelsJson === false) {
 						echo '<option value="" disabled>Error loading models</option>';
 					} else {
@@ -65,7 +65,7 @@
         const modelSelect = document.getElementById('model-select');
 
         function updateModelStatus() {
-            fetch('http://LiveLink.local/models/models.json')
+            fetch('/src/Models/models.json')
                 .then(response => response.json())
                 .then(models => {
                     if (models && models.length > 0) {
@@ -83,7 +83,7 @@
         }
 
         function checkModelStatus(model) {
-            fetch('http://LiveLink.local/index.php', {
+            fetch('/src/Controllers/ChatController.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
