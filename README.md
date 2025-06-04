@@ -32,10 +32,10 @@ The project is built with PHP and integrates seamlessly with the Ollama API to d
     npm install
     ```
 
-4. Configure the environment variables in `config.php`:
-    ```php
-    'ollamaApiUrl' => 'http://localhost:11434/api/',
-    'jwtToken' => 'YOUR_JWT_TOKEN_HERE',
+4. Configure the environment variables in the `.env` file:
+    ```env
+    OLLAMA_API_URL=http://localhost:11434/api/
+    OLLAMA_JWT_TOKEN=YOUR_JWT_TOKEN_HERE
     ```
 
 ## Usage
@@ -54,13 +54,11 @@ http://localhost:8000
 
 ## Configuration
 
-The `config.php` file contains the settings required to connect to the Ollama API. Ensure you have the correct API URL and JWT token set up:
+The application uses [vlucas/phpdotenv](https://github.com/vlucas/phpdotenv) to load settings from the `.env` file. Make sure the following variables are defined:
 
-```php
-return [
-    'ollamaApiUrl' => 'http://localhost:11434/api/',
-    'jwtToken' => 'YOUR_JWT_TOKEN_HERE',
-];
+```env
+OLLAMA_API_URL=http://localhost:11434/api/
+OLLAMA_JWT_TOKEN=YOUR_JWT_TOKEN_HERE
 ```
 
 ### Choose Your Default Model
@@ -98,19 +96,9 @@ Our UI automatically connects to the Ollama API, making it easy to manage your c
 
 # How to use
 Clone the repository and set up your project by following the instructions in the setup guide.
-Ensure your Ollama API URL and JWT token are configured correctly in the config.php file.
-Use the fetch_models.php script to fetch the available models from the Ollama API and update the model list.
+Ensure your `OLLAMA_API_URL` and `OLLAMA_JWT_TOKEN` values are set in the `.env` file.
+Use the `fetch_models.php` script to fetch the available models from the Ollama API and update the model list.
 
-```php
-// config.php
-
-return [
-    'ollamaApiUrl' => 'http://localhost:11434/api/',
-    'jwtToken' => 'YOUR_JWT_TOKEN'
-];
-
-```
-Run the fetch_models.php script to update the models list.
 
 ```sh
 php fetch_models.php
