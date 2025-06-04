@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const userInput = document.getElementById('user-input');
     const fileButton = document.getElementById('file-button');
     const filePreview = document.getElementById('file-preview');
+    const syncModelsBtn = document.getElementById('sync-models-btn');
     let uploadedFile = null;
 
     function updateModelStatus() {
@@ -58,6 +59,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     updateModelStatus();
+
+    syncModelsBtn.addEventListener('click', function() {
+        axios.get('/public/fetch_models.php')
+            .then(function(response) {
+                var data = response.data;
+                if (data.success) {
+                    updateModelStatus();
+                } else {
+                    console.error(data.error || 'Model sync failed');
+                }
+            })
+            .catch(function(error) {
+                console.error('Failed to sync models:', error);
+            });
+    });
 
     chatForm.addEventListener('submit', function(event) {
         event.preventDefault();
