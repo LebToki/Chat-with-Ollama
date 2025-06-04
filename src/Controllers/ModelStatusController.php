@@ -3,7 +3,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 
-require __DIR__ . '/../config.php';
+$config = require __DIR__ . '/../config.php';
 
 $ollamaApiUrl = $config['ollamaApiUrl'];
 $jwtToken = $config['jwtToken'];
