@@ -34,9 +34,10 @@
 			],
 		];
 		
-		if ($file) {
-			$data['file'] = new CURLFile($file['tmp_name'], $file['type'], $file['name']);
-		}
+                if ($file && is_uploaded_file($file['tmp_name'])) {
+                        $imageData = base64_encode(file_get_contents($file['tmp_name']));
+                        $data['images'] = [$imageData];
+                }
 		
 		try {
 			$response = $client->post('generate', [

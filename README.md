@@ -97,11 +97,10 @@ Our UI automatically connects to the Ollama API, making it easy to manage your c
 # How to use
 Clone the repository and set up your project by following the instructions in the setup guide.
 Ensure your `OLLAMA_API_URL` and `OLLAMA_JWT_TOKEN` values are set in the `.env` file.
-Use the `fetch_models.php` script to fetch the available models from the Ollama API and update the model list.
-
+Use the `public/fetch_models.php` script to automatically detect the models installed on your local Ollama server and update `src/Models/models.json`.
 
 ```sh
-php fetch_models.php
+php public/fetch_models.php
 ```
 
 Start interacting with the chatbot through the UI.
