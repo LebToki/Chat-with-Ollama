@@ -1,15 +1,14 @@
 <?php 
 require_once __DIR__ . '/icon_helper.php';
-require __DIR__ . '/header.php'; 
+require __DIR__ . '/header.php';
+$config = require dirname(__DIR__) . '/src/config.php';
+$developerName = $config['developerName'] ?? '{{DEVELOPER_NAME}}';
+$companyName = $config['companyName'] ?? '{{COMPANY_NAME}}';
+$companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}'; 
 ?>
 
 <div class="main-content">
     <div class="container-fluid" style="padding: 24px 32px;">
-        <!-- Header Section -->
-        <div style="margin-bottom: 32px;">
-            <h1 class="text-gradient" style="margin: 0;">Settings</h1>
-        </div>
-        
         <!-- Two Column Layout -->
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
             <!-- Left Column: Model Configuration -->
@@ -94,7 +93,7 @@ require __DIR__ . '/header.php';
                 
                 <div style="margin-bottom: 24px; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <img src="/2tinteractive-logo.png.webp" alt="2TInteractive" class="settings-logo" style="padding: 5px !important; height: 32px !important; width: auto !important;">
+                        <img src="/2tinteractive-logo.png.webp" alt="<?php echo htmlspecialchars($companyName); ?>" class="settings-logo" style="padding: 5px !important; height: 32px !important; width: auto !important;">
                         <div>
                             <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Professional Development Services</p>
                         </div>
@@ -103,12 +102,12 @@ require __DIR__ . '/header.php';
                         Custom web development, AI integrations, and premium solutions for your business needs.
                     </p>
                     <div style="display: flex; gap: 12px;">
-                        <a href="https://2tinteractive.com" target="_blank" class="btn-modern" style="flex: 1; text-align: center; text-decoration: none;">
+                        <a href="<?php echo htmlspecialchars($companyUrl); ?>" target="_blank" class="btn-modern" style="flex: 1; text-align: center; text-decoration: none;">
                             Visit Website
                         </a>
                     </div>
                     <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--glass-border); font-size: 12px; color: var(--text-secondary);">
-                        Developed by <strong style="color: var(--accent);">Tarek Tarabichi</strong>
+                        Developed by <strong style="color: var(--accent);"><?php echo htmlspecialchars($developerName); ?></strong>
                     </div>
                 </div>
                 

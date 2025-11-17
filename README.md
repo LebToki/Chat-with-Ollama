@@ -1,10 +1,17 @@
-# Chat with Ollama
+# Chat with Ollama - Free Edition
 
 A modern, RAG-powered AI chat application that integrates with Ollama for local AI inference. Chat with various Ollama models while leveraging your own documents for context-aware, intelligent responses.
+
+**🆓 Free & Open Source** - Perfect for individuals and developers who want privacy-first AI chat with local models.
 
 ![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-success)
+![Provider](https://img.shields.io/badge/Provider-Ollama%20Only-orange)
+![Version](https://img.shields.io/badge/version-2.2.0-blue)
+
+> **💡 Looking for Multi-Provider Support?**  
+> Check out **[NexusAI Chat](https://2tinteractive.com/nexusai)** - Our premium enterprise solution with support for Ollama, DeepSeek, OpenAI, Anthropic, and more! Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 
 ## Features
 
@@ -299,11 +306,33 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License.
 
+## Free vs Premium
+
+**Chat with Ollama (Free Edition)** - This repository
+- ✅ Ollama integration (local AI)
+- ✅ RAG with document support
+- ✅ Session management
+- ✅ Open source (MIT License)
+- ✅ Community support
+
+**NexusAI Chat (Premium)** - Enterprise solution
+- ✅ All free features, plus:
+- ✅ Multi-provider support (DeepSeek, OpenAI, Anthropic, and more)
+- ✅ Team collaboration
+- ✅ Advanced analytics
+- ✅ Enterprise features
+- ✅ Priority support
+
+Visit [2tinteractive.com](https://2tinteractive.com) to learn more about NexusAI Chat.
+
 ## Credits
 
-Developed by **Tarek Tarabichi** from [2TInteractive](https://2tinteractive.com)
+Developed by **{{DEVELOPER_NAME}}** from [{{COMPANY_NAME}}]({{COMPANY_URL}})
 
 Professional web development, AI integrations, and premium solutions for your business needs.
+
+> **Note**: Replace `{{DEVELOPER_NAME}}`, `{{COMPANY_NAME}}`, and `{{COMPANY_URL}}` with your actual branding in the `.env` file or `src/config.php`.  
+> For example: `DEVELOPER_NAME=Your Name`, `COMPANY_NAME=Your Company`, `COMPANY_URL=https://yourcompany.com`
 
 ## Support
 

@@ -98,13 +98,28 @@ class Database
                 FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
             )",
             
+            "CREATE TABLE IF NOT EXISTS provider_usage (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                provider TEXT NOT NULL,
+                model TEXT NOT NULL,
+                session_id INTEGER,
+                input_tokens INTEGER DEFAULT 0,
+                output_tokens INTEGER DEFAULT 0,
+                total_tokens INTEGER DEFAULT 0,
+                cost_usd REAL DEFAULT 0.0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE SET NULL
+            )",
+            
             "CREATE INDEX IF NOT EXISTS idx_document_chunks_document_id ON document_chunks(document_id)",
             "CREATE INDEX IF NOT EXISTS idx_embeddings_chunk_id ON embeddings(chunk_id)",
             "CREATE INDEX IF NOT EXISTS idx_embeddings_model ON embeddings(model_name)",
             "CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id)",
             "CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at)",
             "CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status)",
-            "CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated_at ON chat_sessions(updated_at)"
+            "CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated_at ON chat_sessions(updated_at)",
+            "CREATE INDEX IF NOT EXISTS idx_provider_usage_provider ON provider_usage(provider)",
+            "CREATE INDEX IF NOT EXISTS idx_provider_usage_created_at ON provider_usage(created_at)"
         ];
 
         foreach ($queries as $query) {

@@ -117,10 +117,13 @@ body::before {
     background: var(--dark-surface);
     border-right: 1px solid var(--glass-border);
     padding: 16px;
+    padding-bottom: 10px;
     z-index: 1000;
     overflow-y: auto;
     overflow-x: hidden;
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 @supports (height: 100dvh) {
@@ -205,6 +208,17 @@ body::before {
 /* Chat sessions list */
 .chat-sessions {
     margin-top: 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* GitHub Community Section */
+.github-community {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--glass-border);
+    position: relative;
+    bottom: 10px;
 }
 
 .chat-session-item {
@@ -260,7 +274,7 @@ body::before {
 .modern-header {
     background: var(--dark-surface);
     border-bottom: 1px solid var(--glass-border);
-    padding: 12px 24px;
+    padding: 12px 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -272,6 +286,9 @@ body::before {
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    padding-right: 60px;
 }
 
 .header-actions {
@@ -686,7 +703,7 @@ ul {
 /* Chat input - Ollama style */
 .chat-input-container {
     position: sticky;
-    bottom: 0;
+    bottom: 50px;
     left: 0;
     right: 0;
     padding: 16px 32px 20px;
@@ -1365,6 +1382,16 @@ iconify-icon {
     background-color: rgba(118, 75, 162, 0.25);
     border-color: rgba(118, 75, 162, 0.5);
     transform: rotate(180deg);
+}
+
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .help-accordion .accordion-collapse {

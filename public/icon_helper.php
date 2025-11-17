@@ -27,10 +27,10 @@ class IconHelper {
      */
     public static function getBotIcon($type = 'default') {
         $icons = [
-            'default' => 'mdi:robot',
-            'assistant' => 'mdi:robot-happy',
-            'chatbot' => 'mdi:chatbot',
-            'ai' => 'mdi:artificial-intelligence',
+            'default' => 'hugeicons:chat-bot',
+            'assistant' => 'hugeicons:chat-bot',
+            'chatbot' => 'hugeicons:chat-bot',
+            'ai' => 'hugeicons:chat-bot',
             'brain' => 'mdi:brain',
             'rag' => 'mdi:database-search',
         ];

@@ -23,26 +23,19 @@
 		$input = json_decode(file_get_contents('php://input'), true);
 		$message = $_POST['message'] ?? $input['message'] ?? '';
 		$model = $_POST['model'] ?? $input['model'] ?? 'llama3';
-		$provider = $_POST['provider'] ?? $input['provider'] ?? $config['defaultProvider'] ?? 'ollama';
+		// Free version: Force Ollama provider only
+		$provider = 'ollama';
 		$file = $_FILES['file'] ?? null;
 		$useRAG = isset($_POST['use_rag']) ? filter_var($_POST['use_rag'], FILTER_VALIDATE_BOOLEAN) : true;
 		$sessionId = $_POST['session_id'] ?? $input['session_id'] ?? null;
 		
-		// Try to detect provider from model name if not specified
-		if ($provider === 'ollama' || empty($provider)) {
-			$detectedProvider = GenAIFactory::detectProviderFromModel($model);
-			if ($detectedProvider !== 'ollama') {
-				$provider = $detectedProvider;
-			}
-		}
-		
-		// Get the appropriate provider
+		// Free version: Only Ollama provider is available
 		try {
-			$genAIProvider = GenAIFactory::getProvider($provider);
-		} catch (Exception $e) {
-			// Fallback to Ollama if provider not available
-			$provider = 'ollama';
 			$genAIProvider = GenAIFactory::getProvider('ollama');
+		} catch (Exception $e) {
+			echo "data: " . json_encode(['error' => 'Ollama provider not available: ' . $e->getMessage()]) . "\n\n";
+			flush();
+			exit;
 		}
 		
 		// Keep Ollama client for RAG (embeddings still use Ollama)
@@ -112,6 +105,11 @@
 				try {
 					$db = Database::getInstance()->getConnection();
 					
+					// Estimate tokens (rough approximation: ~4 characters per token)
+					$inputTokens = (int)ceil(strlen($message) / 4);
+					$outputTokens = (int)ceil(strlen($fullResponse) / 4);
+					$totalTokens = $inputTokens + $outputTokens;
+					
 					// Store user message
 					$stmt = $db->prepare("
 						INSERT INTO chat_messages (session_id, role, content, model_used, context_chunks)
@@ -120,7 +118,7 @@
 					$stmt->execute([
 						':session_id' => $sessionId,
 						':content' => $message,
-						':model' => $model,
+						':model' => $model . ' (' . $provider . ')',
 						':context' => json_encode($contextChunks)
 					]);
 					
@@ -132,8 +130,11 @@
 					$stmt->execute([
 						':session_id' => $sessionId,
 						':content' => $fullResponse,
-						':model' => $model
+						':model' => $model . ' (' . $provider . ')'
 					]);
+					
+					// Provider usage tracking removed - premium feature (NexusAI only)
+					// Usage analytics available in NexusAI Chat: https://2tinteractive.com
 					
 					// Update session timestamp
 					$stmt = $db->prepare("UPDATE chat_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = :id");
@@ -148,7 +149,7 @@
 					]) . "\n\n";
 					
 				} catch (Exception $e) {
-					error_log("Failed to store chat message: " . $e->getMessage());
+					error_log("Failed to store chat message or usage: " . $e->getMessage());
 				}
 			}
 			

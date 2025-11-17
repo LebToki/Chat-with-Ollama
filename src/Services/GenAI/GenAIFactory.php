@@ -19,40 +19,21 @@ class GenAIFactory
     {
         $providerName = strtolower($providerName);
         
+        // Free version: Only allow Ollama provider
+        if ($providerName !== 'ollama') {
+            throw new Exception("Provider '{$providerName}' is not available in the free version. Only Ollama is supported. Upgrade to NexusAI Chat for multi-provider support: https://2tinteractive.com");
+        }
+        
         if (isset(self::$providers[$providerName])) {
             return self::$providers[$providerName];
         }
 
-        switch ($providerName) {
-            case 'groq':
-                self::$providers[$providerName] = new GroqProvider();
-                break;
-            
-            case 'huggingface':
-            case 'hf':
-                self::$providers[$providerName] = new HuggingFaceProvider();
-                break;
-            
-            case 'togetherai':
-            case 'together':
-                self::$providers[$providerName] = new TogetherAIProvider();
-                break;
-            
-            case 'openrouter':
-                self::$providers[$providerName] = new OpenRouterProvider();
-                break;
-            
-            case 'ollama':
-                $config = require __DIR__ . '/../../config.php';
-                self::$providers[$providerName] = new OllamaProvider(
-                    $config['ollamaApiUrl'] ?? null,
-                    $config['jwtToken'] ?? null
-                );
-                break;
-            
-            default:
-                throw new Exception("Unknown provider: {$providerName}");
-        }
+        // Only Ollama provider is available in free version
+        $config = require __DIR__ . '/../../config.php';
+        self::$providers[$providerName] = new OllamaProvider(
+            $config['ollamaApiUrl'] ?? null,
+            $config['jwtToken'] ?? null
+        );
 
         return self::$providers[$providerName];
     }
@@ -64,22 +45,20 @@ class GenAIFactory
      */
     public static function getAvailableProviders(): array
     {
+        // Free version: Only return Ollama provider
         $available = [];
-        $providers = ['groq', 'huggingface', 'togetherai', 'openrouter', 'ollama'];
         
-        foreach ($providers as $providerName) {
-            try {
-                $provider = self::getProvider($providerName);
-                if ($provider->isAvailable()) {
-                    $available[] = [
-                        'name' => $provider->getName(),
-                        'id' => $providerName,
-                        'models' => $provider->getModels(),
-                    ];
-                }
-            } catch (Exception $e) {
-                // Provider not available, skip
+        try {
+            $provider = self::getProvider('ollama');
+            if ($provider->isAvailable()) {
+                $available[] = [
+                    'name' => $provider->getName(),
+                    'id' => 'ollama',
+                    'models' => $provider->getModels(),
+                ];
             }
+        } catch (Exception $e) {
+            // Ollama not available
         }
         
         return $available;
@@ -93,23 +72,8 @@ class GenAIFactory
      */
     public static function detectProviderFromModel(string $model): string
     {
-        // Check model name patterns to detect provider
-        if (str_contains($model, 'llama-3.1') || str_contains($model, 'mixtral') || str_contains($model, 'gemma')) {
-            return 'groq';
-        }
-        
-        if (str_contains($model, 'mistralai/') || str_contains($model, 'meta-llama/')) {
-            if (str_contains($model, 'hf')) {
-                return 'huggingface';
-            }
-            return 'togetherai';
-        }
-        
-        if (str_contains($model, 'google/') || str_contains($model, 'qwen/')) {
-            return 'openrouter';
-        }
-        
-        // Default to ollama for local models
+        // Free version: Always return Ollama
+        // All models are assumed to be Ollama models in the free version
         return 'ollama';
     }
 }

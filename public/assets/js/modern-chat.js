@@ -25,6 +25,7 @@ if (window.self !== window.top) {
 
 let currentSessionId = null;
 let ragEnabled = true;
+let streamingEnabled = true;
 let uploadedFiles = [];
 
 // Cache for API responses to reduce unnecessary calls
@@ -57,8 +58,26 @@ document.addEventListener( 'DOMContentLoaded', function () {
     }
     initializeChat();
     setupEventListeners();
-    updateModelList();
+    loadProviders(); // Load providers first, then models (will load Ollama models)
     loadDocuments();
+    
+    // Ensure models are loaded even if provider loading fails
+    // This is a fallback to ensure model selector works
+    setTimeout(() => {
+        const modelSelect = document.getElementById('model-select');
+        if (modelSelect && (!modelSelect.options || modelSelect.options.length <= 1)) {
+            // If model selector is empty or only has "Loading models...", load them
+            updateModelListForProvider('ollama');
+        }
+    }, 1000);
+    
+    // Initialize streaming toggle button state
+    const streamingBtn = document.getElementById('streaming-toggle');
+    if (streamingBtn) {
+        streamingBtn.dataset.streamingEnabled = streamingEnabled;
+        streamingBtn.style.background = streamingEnabled ? 'var(--primary-gradient)' : 'var(--glass-bg)';
+        streamingBtn.style.color = streamingEnabled ? 'white' : 'var(--text-primary)';
+    }
     
     // Load sessions after initialization (will auto-load first session with messages if no URL session)
     loadChatSessions();
@@ -271,6 +290,8 @@ function sendMessageWithSession( message ) {
     const formData = new FormData();
     formData.append( 'message', message );
     formData.append( 'model', document.getElementById( 'model-select' ).value || 'llama3.2:latest' );
+    // Free version: Always use Ollama provider
+    formData.append( 'provider', 'ollama' );
     formData.append( 'use_rag', ragEnabled );
     if ( currentSessionId ) {
         formData.append( 'session_id', currentSessionId );
@@ -424,11 +445,103 @@ function toggleRAG() {
     showNotification( ragEnabled ? 'RAG enabled - Using document context' : 'RAG disabled - Standard mode', 'info' );
 }
 
-function updateModelList() {
+function toggleStreaming() {
+    streamingEnabled = !streamingEnabled;
+    const btn = document.getElementById( 'streaming-toggle' );
+    if (btn) {
+        btn.dataset.streamingEnabled = streamingEnabled;
+        btn.style.background = streamingEnabled ? 'var(--primary-gradient)' : 'var(--glass-bg)';
+        btn.style.color = streamingEnabled ? 'white' : 'var(--text-primary)';
+        showNotification( streamingEnabled ? 'Streaming enabled' : 'Streaming disabled', 'info' );
+    }
+}
+
+// Load available providers
+// Free version: Only Ollama is available, so hide provider selector
+function loadProviders() {
+    const providerSelect = document.getElementById( 'provider-select' );
+    if ( providerSelect ) {
+        // Free version: Only Ollama available - hide provider selector
+        const providerContainer = providerSelect.closest( '.provider-container' ) || providerSelect.parentElement;
+        if ( providerContainer ) {
+            providerContainer.style.display = 'none';
+        } else {
+            providerSelect.style.display = 'none';
+        }
+    }
+
+    // Always use Ollama in free version and load models
+    const providerId = 'ollama';
+    updateModelListForProvider( providerId );
+}
+
+// Update model list based on selected provider
+function updateModelListForProvider( providerId ) {
     const select = document.getElementById( 'model-select' );
     if ( ! select ) {
         console.error( 'Model select element not found' );
         return;
+    }
+
+    select.innerHTML = '<option value="">Loading models...</option>';
+
+    // Free version: Only Ollama is supported
+    if ( providerId === 'ollama' || !providerId ) {
+        axios.get( '/api/models.php' ).then( response => {
+            const models = response.data;
+            select.innerHTML = '';
+
+            if ( models && models.length > 0 ) {
+                models.forEach( model => {
+                    const option = document.createElement( 'option' );
+                    // Handle both object format {name: "model"} and string format
+                    const modelName = typeof model === 'string' ? model : (model.name || model);
+                    option.value = modelName;
+                    option.textContent = modelName;
+                    select.appendChild( option );
+                } );
+
+                const savedModel = localStorage.getItem( 'defaultModel' );
+                if ( savedModel && Array.from(select.options).some(opt => opt.value === savedModel)) {
+                    select.value = savedModel;
+                } else if ( models.length > 0 ) {
+                    const firstModel = typeof models[0] === 'string' ? models[0] : (models[0].name || models[0]);
+                    select.value = firstModel;
+                }
+            } else {
+                select.innerHTML = '<option value="">No models available. Sync models in Settings.</option>';
+            }
+        } ).catch( error => {
+            console.error( 'Failed to load models:', error );
+            select.innerHTML = '<option value="">Failed to load models. Check Ollama connection.</option>';
+        } );
+    } else {
+        // For cloud providers, get models from providers endpoint
+        axios.get( '/api/providers.php' ).then( response => {
+            if ( response.data.success && response.data.providers ) {
+                const provider = response.data.providers.find( p => p.id === providerId );
+                if ( provider && provider.models ) {
+                    select.innerHTML = '';
+                    provider.models.forEach( model => {
+                        const option = document.createElement( 'option' );
+                        option.value = model;
+                        option.textContent = model;
+                        select.appendChild( option );
+                    } );
+
+                    if ( provider.models.length > 0 ) {
+                        select.value = provider.models[ 0 ];
+                    }
+                } else {
+                    select.innerHTML = '<option value="">No models available</option>';
+                }
+            } else {
+                select.innerHTML = '<option value="">Failed to load models</option>';
+            }
+        } ).catch( error => {
+            console.error( 'Failed to load provider models:', error );
+            select.innerHTML = '<option value="">Failed to load models</option>';
+        } );
     }
 
     // Add change event listener (only once)
@@ -438,32 +551,13 @@ function updateModelList() {
         } );
         select.dataset.listenerAdded = 'true';
     }
+}
 
-    axios.get( '/api/models.php' ).then( response => {
-        const models = response.data;
-        select.innerHTML = '';
-
-        if ( models && models.length > 0 ) {
-            models.forEach( model => {
-                const option = document.createElement( 'option' );
-                option.value = model.name;
-                option.textContent = model.name;
-                select.appendChild( option );
-            } );
-
-            const savedModel = localStorage.getItem( 'defaultModel' );
-            if ( savedModel ) {
-                select.value = savedModel;
-            } else {
-                select.value = models[ 0 ].name;
-            }
-        } else {
-            select.innerHTML = '<option value="">No models available</option>';
-        }
-    } ).catch( error => {
-        console.error( 'Failed to load models:', error );
-        select.innerHTML = '<option value="">Failed to load models</option>';
-    } );
+// Legacy function for backward compatibility
+function updateModelList() {
+    const providerSelect = document.getElementById( 'provider-select' );
+    const providerId = providerSelect ? providerSelect.value : 'ollama';
+    updateModelListForProvider( providerId );
 }
 
 function syncModels() {

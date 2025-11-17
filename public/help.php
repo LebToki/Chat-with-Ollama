@@ -1,13 +1,15 @@
 <?php 
 require_once __DIR__ . '/icon_helper.php';
-require __DIR__ . '/header.php'; 
+require __DIR__ . '/header.php';
+$config = require dirname(__DIR__) . '/src/config.php';
+$companyName = $config['companyName'] ?? '{{COMPANY_NAME}}';
+$companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}'; 
 ?>
 
 <main class="main-content" role="main" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
     <div class="container-fluid" style="padding: 24px 32px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <!-- Header Section -->
+        <!-- Description Section -->
         <div style="margin-bottom: 32px;">
-            <h1 class="text-gradient" style="margin: 0 0 8px 0;">Help & Documentation</h1>
             <p style="color: var(--text-secondary); font-size: 16px; margin: 0;">
                 Find answers to common questions about Chat with Ollama, from setup and RAG to document processing, embeddings, and more.
             </p>
@@ -351,15 +353,50 @@ require __DIR__ . '/header.php';
                     </div>
                 </div>
 
+                <!-- NexusAI Chat Premium -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingNexusAI">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNexusAI" aria-expanded="false" aria-controls="collapseNexusAI">
+                            <?php echo IconHelper::icon('mdi:rocket-launch'); ?>
+                            Need more features? Check out NexusAI Chat!
+                        </button>
+                    </h2>
+                    <div id="collapseNexusAI" class="accordion-collapse collapse" aria-labelledby="headingNexusAI" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px;">
+                                <strong style="color: var(--accent);">Chat with Ollama</strong> is the free, open-source edition focused on local AI with Ollama. If you need enterprise features, multi-provider support, and advanced capabilities, check out <strong style="color: var(--accent);">NexusAI Chat</strong>!
+                            </p>
+                            <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin: 16px 0 8px 0;">NexusAI Chat Premium Features:</h3>
+                            <ul style="padding-left: 24px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px;">
+                                <li><strong>Multi-Provider AI Engine:</strong> Support for DeepSeek, OpenAI, Anthropic, Gemini, Groq, HuggingFace, TogetherAI, OpenRouter, and more</li>
+                                <li><strong>Advanced RAG System:</strong> Enhanced semantic search, cross-document analysis, and intelligent document linking</li>
+                                <li><strong>Team Collaboration:</strong> Shared documents, chat sessions, and role-based access control</li>
+                                <li><strong>Analytics & Insights:</strong> Usage tracking, cost monitoring, and performance metrics</li>
+                                <li><strong>Enterprise Features:</strong> Audit logging, data encryption, compliance ready (GDPR, HIPAA, SOC2)</li>
+                                <li><strong>API Access:</strong> Full REST API for system integration</li>
+                                <li><strong>White-labeling:</strong> Custom branding and domain support</li>
+                            </ul>
+                            <div style="margin-top: 20px; padding: 16px; background: rgba(var(--accent-rgb), 0.1); border-radius: 8px; border: 1px solid rgba(var(--accent-rgb), 0.3);">
+                                <p style="margin: 0; color: var(--text-primary); font-weight: 600; margin-bottom: 8px;">
+                                    Ready to upgrade?
+                                </p>
+                                <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
+                                    Visit <a href="https://2tinteractive.com" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">2tinteractive.com</a> to learn more about NexusAI Chat and explore pricing plans.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Footer -->
             <div style="margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--glass-border); text-align: center;">
                 <p style="color: var(--text-secondary); margin-bottom: 16px;">Need more help? Check the documentation or contact support.</p>
                 <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-                    <a href="https://2tinteractive.com" target="_blank" style="color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                    <a href="<?php echo htmlspecialchars($companyUrl); ?>" target="_blank" style="color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px;">
                         <?php echo IconHelper::icon('mdi:web', '', 'font-size: 16px;'); ?>
-                        Visit 2TInteractive
+                        Visit <?php echo htmlspecialchars($companyName); ?>
                     </a>
                 </div>
             </div>

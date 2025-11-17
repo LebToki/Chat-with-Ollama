@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2025-01-XX
+
+### Added
+- **Branding Configuration**: Configurable developer name, company name, and URLs via environment variables
+- **NexusAI Chat Promotion**: Added FAQ section promoting NexusAI Chat premium features
+- **Enhanced Documentation**: Improved README with clear free vs premium comparison
+
+### Changed
+- **Code Cleanup**: Removed all premium features and external provider support (Ollama-only in free version)
+- **Path Fixes**: Fixed config path resolution using `dirname(__DIR__)` for better cross-platform compatibility
+- **File Organization**: Moved all development files to `/devfiles/` directory for cleaner repository
+
+### Removed
+- **Premium Features**: Removed multi-provider support, Generative AI, provider usage analytics
+- **External Providers**: Removed DeepSeek, OpenAI, Anthropic, Gemini, Groq, HuggingFace, TogetherAI, OpenRouter support
+- **Development Files**: Moved test files, documentation, and tools to `/devfiles/` directory
+
+### Fixed
+- **Config Path**: Fixed `Failed to open stream` error by using proper path resolution
+- **Branding**: All personal names and company references now use configurable placeholders
+
 ## [Unreleased] - 2024
 
 ### Added

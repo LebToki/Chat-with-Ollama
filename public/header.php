@@ -1,12 +1,21 @@
 <?php
 // Security headers
-header("Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://api.iconify.design https://iconify.design; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.iconify.design https://iconify.design;");
+// CSP includes all Iconify CDN fallbacks: cdn.iconify.design, cdn.jsdelivr.net, unpkg.com, cdnjs.cloudflare.com
+header("Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' https://cdn.iconify.design https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://api.iconify.design https://iconify.design; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.iconify.design https://iconify.design https://cdn.iconify.design https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com;");
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 
 require_once __DIR__ . '/path_helper.php';
 require_once __DIR__ . '/icon_helper.php';
+$config = require dirname(__DIR__) . '/src/config.php';
 $assetsPath = getAssetsPath();
+
+// Branding variables
+$developerName = $config['developerName'] ?? '{{DEVELOPER_NAME}}';
+$companyName = $config['companyName'] ?? '{{COMPANY_NAME}}';
+$companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
+$githubUsername = $config['githubUsername'] ?? '{{GITHUB_USERNAME}}';
+$githubRepo = $config['githubRepo'] ?? 'chat-with-ollama';
 
 // Debug mode - uncomment to enable console logging
 $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
@@ -32,19 +41,31 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
     <link rel="stylesheet" href="<?php echo $assetsPath; ?>/libs/bootstrap/css/bootstrap.min.css" onerror="console.error('Failed to load Bootstrap CSS:', this.href)">
     <link rel="stylesheet" href="<?php echo $assetsPath; ?>/css/modern.css" onerror="console.error('Failed to load Modern CSS:', this.href)">
     <!-- Iconify Icons - 200+ icon sets, 275k+ icons -->
-    <!-- Multiple CDN fallbacks for reliability -->
+    <!-- Official CDN with custom fallback for reliability -->
     <script>
-        // Enhanced Iconify loading with multiple CDN fallbacks
+        // Enhanced Iconify loading with multiple CDN fallbacks and custom fallback
         (function() {
             let iconifyLoaded = false;
+            
+            // Multiple CDN fallbacks for reliability
+            const iconifyCDNs = [
+                'https://cdn.iconify.design/3.1.1/iconify.min.js',
+                'https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js',
+                'https://unpkg.com/@iconify/iconify@3.1.1/dist/iconify.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/iconify/3.1.1/iconify.min.js'
+            ];
+            
             let currentCDNIndex = 0;
             
-            // List of CDN sources to try
-            const iconifyCDNs = [
-                'https://cdn.jsdelivr.net/npm/@iconify/iconify@latest/dist/iconify-icon.min.js',
-                'https://unpkg.com/@iconify/iconify@latest/dist/iconify-icon.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/iconify/3.1.1/iconify-icon.min.js'
-            ];
+            // Suppress network errors in console
+            const originalError = console.error;
+            console.error = function(...args) {
+                // Suppress Iconify CDN errors
+                if (args[0] && typeof args[0] === 'string' && args[0].includes('iconify')) {
+                    return;
+                }
+                originalError.apply(console, args);
+            };
             
             // Check if Iconify loaded successfully
             function checkIconifyLoaded() {
@@ -63,13 +84,14 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
                 return false;
             }
             
-            // Try loading from next CDN
-            function tryNextCDN() {
-                if (iconifyLoaded || currentCDNIndex >= iconifyCDNs.length) {
+            // Try loading from CDN with fallbacks
+            function loadIconify() {
+                if (iconifyLoaded) return;
+                
+                if (currentCDNIndex >= iconifyCDNs.length) {
                     // All CDNs failed, use custom fallback
-                    if (!iconifyLoaded) {
-                        createCustomFallback();
-                    }
+                    console.warn('All Iconify CDNs failed, using custom fallback...');
+                    createCustomFallback();
                     return;
                 }
                 
@@ -77,31 +99,37 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
                 script.src = iconifyCDNs[currentCDNIndex];
                 script.defer = true;
                 
-                // Add timeout to detect connection timeouts
+                // Add timeout to detect connection timeouts (reduced to 3 seconds)
                 const timeout = setTimeout(function() {
-                    console.warn('Iconify CDN ' + (currentCDNIndex + 1) + ' timed out, trying next...');
                     script.onerror(); // Trigger error handler
-                }, 5000); // 5 second timeout
+                }, 3000);
                 
                 script.onload = function() {
                     clearTimeout(timeout);
                     // Check if it actually loaded
                     setTimeout(function() {
                         if (checkIconifyLoaded()) {
-                            console.log('✅ Iconify loaded from CDN ' + (currentCDNIndex + 1));
+                            console.log('✅ Iconify loaded from CDN');
                         } else {
-                            // CDN loaded but element not registered, try next
+                            // CDN loaded but element not registered, try next CDN
                             currentCDNIndex++;
-                            tryNextCDN();
+                            loadIconify();
                         }
                     }, 100);
                 };
+                
                 script.onerror = function() {
                     clearTimeout(timeout);
-                    console.warn('Iconify CDN ' + (currentCDNIndex + 1) + ' failed, trying next...');
+                    // Try next CDN
                     currentCDNIndex++;
-                    tryNextCDN();
+                    loadIconify();
                 };
+                
+                // Suppress error logging for this script
+                script.addEventListener('error', function(e) {
+                    e.stopPropagation();
+                }, true);
+                
                 document.head.appendChild(script);
             }
             
@@ -109,7 +137,6 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
             function createCustomFallback() {
                 if (iconifyLoaded) return;
                 
-                console.warn('All Iconify CDNs failed, using custom fallback...');
                 if (typeof customElements !== 'undefined' && !customElements.get('iconify-icon')) {
                     class IconifyIconFallback extends HTMLElement {
                         connectedCallback() {
@@ -178,21 +205,21 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
                 }
             }
             
-            // Start loading from first CDN
-            tryNextCDN();
+            // Start loading from official CDN
+            loadIconify();
             
             // Also check when DOM is ready as backup
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', function() {
                     setTimeout(function() {
-                        if (!checkIconifyLoaded() && currentCDNIndex >= iconifyCDNs.length) {
+                        if (!checkIconifyLoaded()) {
                             createCustomFallback();
                         }
                     }, 2000);
                 });
             } else {
                 setTimeout(function() {
-                    if (!checkIconifyLoaded() && currentCDNIndex >= iconifyCDNs.length) {
+                    if (!checkIconifyLoaded()) {
                         createCustomFallback();
                     }
                 }, 2000);
@@ -223,11 +250,11 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
             <div class="sidebar-logo">Chat with Ollama</div>
             <p style="color: var(--text-secondary); font-size: 14px;">RAG-Powered AI Assistant</p>
             <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
-                <a href="https://2tinteractive.com" target="_blank" style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 12px; transition: color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">
-                    <img src="/2tinteractive-logo.png.webp" alt="2TInteractive" class="header-logo" style="padding: 5px !important; width: 200px !important; height: auto !important;">
+                <a href="<?php echo htmlspecialchars($companyUrl); ?>" target="_blank" style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 12px; transition: color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-secondary)'">
+                    <img src="/2tinteractive-logo.png.webp" alt="<?php echo htmlspecialchars($companyName); ?>" class="header-logo" style="padding: 5px !important; width: 200px !important; height: auto !important;">
                 </a>
                 <div style="margin-top: 4px; font-size: 11px; color: var(--text-secondary); opacity: 0.7;">
-                    by Tarek Tarabichi
+                    by <?php echo htmlspecialchars($developerName); ?>
                 </div>
             </div>
         </div>
@@ -272,24 +299,24 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
         </div>
         
         <!-- GitHub Community Section -->
-        <div class="github-community" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--glass-border);">
+        <div class="github-community">
             <div style="font-weight: 600; font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
                 <i class="fab fa-github"></i> Community
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <a href="https://github.com/yourusername/chat-with-ollama" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
                     <i class="fas fa-star"></i>
                     <span style="font-size: 13px;">Star on GitHub</span>
                 </a>
-                <a href="https://github.com/yourusername/chat-with-ollama/fork" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>/fork" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
                     <i class="fas fa-code-branch"></i>
                     <span style="font-size: 13px;">Fork & Contribute</span>
                 </a>
-                <a href="https://github.com/yourusername/chat-with-ollama/issues" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>/issues" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
                     <i class="fas fa-bug"></i>
                     <span style="font-size: 13px;">Report Issues</span>
                 </a>
-                <a href="https://github.com/yourusername/chat-with-ollama/discussions" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>/discussions" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
                     <i class="fas fa-comments"></i>
                     <span style="font-size: 13px;">Discussions</span>
                 </a>
@@ -297,27 +324,49 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
         </div>
     </div>
     
+    <?php 
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    $isChatPage = $currentPage === 'index.php';
+    $isDocumentsPage = $currentPage === 'documents.php';
+    $isSettingsPage = $currentPage === 'settings.php';
+    $isHelpPage = $currentPage === 'help.php';
+    ?>
     <div class="modern-header">
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <select id="provider-select" class="model-select" style="min-width: 140px;">
-                <option value="ollama">Ollama</option>
-            </select>
-            <select id="model-select" class="model-select">
-                <option value="">Loading models...</option>
-            </select>
+        <div style="display: flex; gap: 12px; align-items: center; padding-left: 24px; flex: 1; min-width: 0;">
+            <?php if ($isChatPage): ?>
+                <!-- Model selector only on chat page -->
+                <select id="provider-select" class="model-select" style="min-width: 140px;">
+                    <option value="ollama">Ollama</option>
+                </select>
+                <select id="model-select" class="model-select">
+                    <option value="">Loading models...</option>
+                </select>
+            <?php else: ?>
+                <!-- Page title on other pages -->
+                <h1 class="text-gradient" style="margin: 0; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <?php
+                    if ($isDocumentsPage) echo 'Document Management';
+                    elseif ($isSettingsPage) echo 'Settings';
+                    elseif ($isHelpPage) echo 'Help & Documentation';
+                    else echo 'Chat with Ollama';
+                    ?>
+                </h1>
+            <?php endif; ?>
         </div>
-        <div class="header-actions">
-            <button class="btn-icon" onclick="openDocumentsModal()" title="Manage Documents">
-                <?php echo IconHelper::icon('mdi:folder-open'); ?>
-            </button>
-            <button class="btn-icon" onclick="toggleStreaming()" id="streaming-toggle" title="Toggle Streaming" data-streaming-enabled="true">
-                <i class="fas fa-stream"></i>
-            </button>
-            <button class="btn-icon" onclick="syncModels()" title="Sync Models">
+        <div class="header-actions" style="flex-shrink: 0;">
+            <?php if ($isChatPage): ?>
+                <button class="btn-icon" onclick="openDocumentsModal()" title="Manage Documents">
+                    <?php echo IconHelper::icon('mdi:folder-open'); ?>
+                </button>
+                <button class="btn-icon" onclick="toggleStreaming()" id="streaming-toggle" title="Toggle Streaming" data-streaming-enabled="true">
+                    <?php echo IconHelper::icon('hugeicons:live-streaming-02'); ?>
+                </button>
+            <?php endif; ?>
+            <button class="btn-icon" onclick="syncModels()" title="Sync Local Models">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
             </button>
-            <a href="https://github.com/yourusername/chat-with-ollama" target="_blank" class="btn-icon" title="View on GitHub" style="text-decoration: none; color: inherit;">
-                <i class="fab fa-github"></i>
+            <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>" target="_blank" class="btn-icon" title="View on GitHub" style="text-decoration: none; color: inherit;">
+                <?php echo IconHelper::icon('mdi:github'); ?>
             </a>
         </div>
     </div>

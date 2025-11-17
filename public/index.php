@@ -1,6 +1,10 @@
 <?php 
 require_once __DIR__ . '/icon_helper.php';
-require __DIR__ . '/header.php'; 
+require __DIR__ . '/header.php';
+$config = require dirname(__DIR__) . '/src/config.php';
+$developerName = $config['developerName'] ?? '{{DEVELOPER_NAME}}';
+$companyName = $config['companyName'] ?? '{{COMPANY_NAME}}';
+$companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}'; 
 ?>
 
 <main class="main-content" role="main">
@@ -9,7 +13,7 @@ require __DIR__ . '/header.php';
         <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
             <div class="chat-empty-state" id="empty-state">
                 <div class="bot-avatar-large">
-                    <?php echo IconHelper::icon(IconHelper::getBotIcon('assistant'), '', 'font-size: 64px;'); ?>
+                    <?php echo IconHelper::icon(IconHelper::getBotIcon('assistant'), '', 'font-size: 100px;'); ?>
                 </div>
                 <h2>Chat with Ollama</h2>
                 <p>Start a conversation or upload documents to enable RAG-powered responses</p>
@@ -45,10 +49,10 @@ require __DIR__ . '/header.php';
                     <span style="font-size: 11px; color: var(--text-secondary);">Made with</span>
                     <iconify-icon icon="mdi:heart" style="color: #f85149; font-size: 12px;"></iconify-icon>
                     <span style="font-size: 11px; color: var(--text-secondary);">
-                        by Tarek Tarabichi from
+                        by <?php echo htmlspecialchars($developerName); ?> from
                     </span>
-                    <a href="https://2tinteractive.com" target="_blank" style="display: inline-flex; align-items: center;">
-                        2TInteractive
+                    <a href="<?php echo htmlspecialchars($companyUrl); ?>" target="_blank" style="display: inline-flex; align-items: center;">
+                        <?php echo htmlspecialchars($companyName); ?>
                     </a>
                 </div>
             </div>

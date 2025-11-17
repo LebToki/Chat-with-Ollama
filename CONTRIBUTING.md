@@ -7,7 +7,7 @@ Thank you for your interest in contributing! This document provides guidelines a
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/yourusername/chat-with-ollama.git
+   git clone https://github.com/{{GITHUB_USERNAME}}/{{GITHUB_REPO}}.git
    cd chat-with-ollama
    ```
 3. **Create a branch** for your changes:

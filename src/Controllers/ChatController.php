@@ -10,6 +10,7 @@
 	use GuzzleHttp\Exception\GuzzleException;
 	use App\Services\RAGService;
 	use App\Services\EmbeddingService;
+	use App\Services\GenAI\GenAIFactory;
 	use App\Database\Database;
 	use App\Http\RequestHelper;
 	use App\Http\ApiResponse;
@@ -17,6 +18,7 @@
 	try {
 		$config = require __DIR__ . '/../../src/config.php';
 		
+		// Ollama config is still needed for RAG embeddings
 		if (!isset($config['ollamaApiUrl']) || !isset($config['jwtToken'])) {
 			throw new Exception('Configuration missing: ollamaApiUrl or jwtToken not found');
 		}
@@ -59,6 +61,8 @@
 		if (RequestHelper::isMethod('POST')) {
 			$message = RequestHelper::getInput('message', '');
 			$model = RequestHelper::getInput('model', 'llama3.2:latest');
+			// Free version: Force Ollama provider only
+			$provider = 'ollama';
 			$file = RequestHelper::getFile('file');
 			
 			// Enhanced debug logging
@@ -66,6 +70,7 @@
 				'message' => substr($message, 0, 100) . (strlen($message) > 100 ? '...' : ''),
 				'message_length' => strlen($message),
 				'model' => $model,
+				'provider' => $provider,
 				'has_file' => !empty($file),
 				'file_name' => $file ? $file['name'] : 'none',
 				'file_size' => $file ? $file['size'] : 0,
@@ -87,14 +92,13 @@
 			
 			$sessionId = RequestHelper::getInput('session_id');
 			
-			$client = new Client([
-			'base_uri' => $ollamaApiUrl,
-			'timeout' => 60.0,
-			'headers' => [
-				'Content-Type' => 'application/json',
-				'Authorization' => 'Bearer ' . $jwtToken,
-			],
-		]);
+			// Free version: Only Ollama provider is available
+			try {
+				$genAIProvider = GenAIFactory::getProvider('ollama');
+			} catch (Exception $e) {
+				error_log("ChatController: Ollama provider not available: " . $e->getMessage());
+				throw $e;
+			}
 		
 		// RAG: Retrieve relevant context
 		$contextChunks = [];
@@ -148,19 +152,27 @@
 			}
 		}
 		
-		$data = [
-			'model' => $model,
-			'prompt' => $message,
-			'stream' => false,
-			'options' => [
-				'num_thread' => 8,
-				'num_ctx' => 4096,
-			],
+		// Prepare options for the provider
+		$options = [
+			'temperature' => 0.7,
+			'max_tokens' => 2048,
 		];
 		
+		// For Ollama, add specific options
+		if ($provider === 'ollama') {
+			$options['num_thread'] = 8;
+			$options['num_ctx'] = 4096;
+		}
+		
+		// Handle file uploads (currently only supported by Ollama)
 		if ($file && is_uploaded_file($file['tmp_name'])) {
-			$imageData = base64_encode(file_get_contents($file['tmp_name']));
-			$data['images'] = [$imageData];
+			if ($provider !== 'ollama') {
+				// For now, only Ollama supports image inputs
+				error_log("ChatController: File uploads only supported with Ollama provider, switching to Ollama");
+				$provider = 'ollama';
+				$genAIProvider = GenAIFactory::getProvider('ollama');
+			}
+			// Note: Image handling would need to be added to OllamaProvider
 		}
 		
 		try {
@@ -169,62 +181,19 @@
 				ApiResponse::error('Message is required', 400);
 			}
 			
-			// Retry logic for model loading
-			$maxRetries = 5;
-			$retryDelay = 2; // Start with 2 seconds
-			$response = null;
-			$lastError = null;
-			
-			for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
-				try {
-					$response = $client->post('generate', [
-						'json' => $data,
-						'timeout' => 60.0,
-					]);
-					break; // Success, exit retry loop
-				} catch (GuzzleException $e) {
-					$lastError = $e;
-					
-					// Check if it's a model loading error
-					if ($e->hasResponse()) {
-						$errorBody = $e->getResponse()->getBody()->getContents();
-						$errorData = json_decode($errorBody, true);
-						
-						// Check for model loading error
-						if (isset($errorData['error']) && 
-							(strpos($errorData['error'], 'loading model') !== false || 
-							 strpos($errorData['error'], 'llm server loading') !== false)) {
-							
-							if ($attempt < $maxRetries) {
-								error_log("ChatController: Model is loading, retry attempt $attempt/$maxRetries in {$retryDelay}s");
-								sleep($retryDelay);
-								$retryDelay = min($retryDelay * 1.5, 10); // Exponential backoff, max 10 seconds
-								continue; // Retry
-							} else {
-								throw new Exception('Model is still loading after ' . $maxRetries . ' attempts. Please wait a moment and try again.');
-							}
-						}
-					}
-					
-					// If it's not a loading error, throw immediately
-					throw $e;
-				}
-			}
-			
-			if (!$response) {
-				throw $lastError ?: new Exception('Failed to get response from Ollama API');
-			}
-			
-			$result = json_decode($response->getBody()->getContents(), true);
-			
-			if (json_last_error() !== JSON_ERROR_NONE) {
-				throw new Exception('Invalid JSON response from Ollama API: ' . json_last_error_msg());
-			}
+			// Use provider to generate response
+			$result = $genAIProvider->generate($message, $model, $options);
 			
 			$botResponse = $result['response'] ?? '';
+			$modelUsed = $result['model_used'] ?? $model;
+			$providerUsed = $result['provider'] ?? $provider;
+			$inputTokens = $result['input_tokens'] ?? 0;
+			$outputTokens = $result['output_tokens'] ?? 0;
+			$totalTokens = $result['total_tokens'] ?? ($inputTokens + $outputTokens);
+			$cost = $result['cost_usd'] ?? 0.0;
 			
 			if (empty($botResponse)) {
-				throw new Exception('Empty response from Ollama API');
+				throw new Exception('Empty response from ' . $providerUsed . ' API');
 			}
 			
 			// Store in database if session exists
@@ -240,7 +209,7 @@
 					$stmt->execute([
 						':session_id' => $sessionId,
 						':content' => $originalMessage, // Store original message with @ mentions
-						':model' => $model,
+						':model' => $modelUsed . ' (' . $providerUsed . ')',
 						':context' => json_encode($contextChunks)
 					]);
 					
@@ -252,21 +221,26 @@
 					$stmt->execute([
 						':session_id' => $sessionId,
 						':content' => $botResponse,
-						':model' => $model
+						':model' => $modelUsed . ' (' . $providerUsed . ')'
 					]);
+					
+					// Provider usage tracking removed - premium feature (NexusAI only)
+					// Usage analytics available in NexusAI Chat: https://2tinteractive.com
 					
 					// Update session timestamp
 					$stmt = $db->prepare("UPDATE chat_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = :id");
 					$stmt->execute([':id' => $sessionId]);
 				} catch (Exception $e) {
-					error_log("Failed to store chat message: " . $e->getMessage());
+					error_log("Failed to store chat message or usage: " . $e->getMessage());
 				}
 			}
 			
 			echo json_encode([
 				'response' => $botResponse,
 				'context_used' => !empty($contextChunks),
-				'context_count' => count($contextChunks)
+				'context_count' => count($contextChunks),
+				'provider' => $providerUsed,
+				'model_used' => $modelUsed
 			]);
 		} catch (Exception $e) {
 			// Enhanced error logging

@@ -1,6 +1,10 @@
 <?php 
 require_once __DIR__ . '/icon_helper.php';
-require __DIR__ . '/header.php'; 
+require __DIR__ . '/header.php';
+$config = require dirname(__DIR__) . '/src/config.php';
+$developerName = $config['developerName'] ?? '{{DEVELOPER_NAME}}';
+$companyName = $config['companyName'] ?? '{{COMPANY_NAME}}';
+$companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}'; 
 ?>
 <script>
 // Suppress Chrome extension errors
@@ -24,9 +28,8 @@ require __DIR__ . '/header.php';
 
 <main class="main-content" role="main" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
     <div class="container-fluid" style="padding: 24px 32px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <!-- Header Section -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
-            <h1 class="text-gradient" style="margin: 0;">Document Management</h1>
+        <!-- Upload Button Section -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
             <button class="btn-modern" onclick="openUploadDialog()">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('add')); ?> Upload Document
             </button>
@@ -133,10 +136,10 @@ require __DIR__ . '/header.php';
                     <span style="font-size: 11px; color: var(--text-secondary);">Made with</span>
                     <iconify-icon icon="mdi:heart" style="color: #f85149; font-size: 12px;"></iconify-icon>
                     <span style="font-size: 11px; color: var(--text-secondary);">
-                        by Tarek Tarabichi from
+                        by <?php echo htmlspecialchars($developerName); ?> from
                     </span>
-                    <a href="https://2tinteractive.com" target="_blank" style="display: inline-flex; align-items: center;">
-                        2TInteractive
+                    <a href="<?php echo htmlspecialchars($companyUrl); ?>" target="_blank" style="display: inline-flex; align-items: center;">
+                        <?php echo htmlspecialchars($companyName); ?>
                     </a>
                 </div>
             </div>
