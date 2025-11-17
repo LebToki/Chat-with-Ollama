@@ -96,7 +96,10 @@
     </div>
     
     <div class="modern-header">
-        <div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <select id="provider-select" class="model-select" style="min-width: 140px;">
+                <option value="ollama">Ollama</option>
+            </select>
             <select id="model-select" class="model-select">
                 <option value="">Loading models...</option>
             </select>

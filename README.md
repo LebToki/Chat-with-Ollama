@@ -4,6 +4,16 @@ A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Au
 
 ## ✨ Features
 
+### 🤖 Multiple Free GenAI Providers
+- **Groq**: Ultra-fast inference (30 req/min free tier)
+- **Hugging Face**: Free open-source models
+- **Together AI**: $25 free credit to start
+- **OpenRouter**: Access to multiple model providers
+- **Ollama**: Local, private, unlimited (default)
+- **Seamless Switching**: Switch providers without code changes
+- **Auto-Detection**: Automatically detects provider from model name
+- See [FREE_GENAI_PROVIDERS.md](FREE_GENAI_PROVIDERS.md) for setup instructions
+
 ### 🎨 Modern UI/UX
 - **Glassmorphism Design**: Beautiful frosted glass effects with smooth animations
 - **Gradient Accents**: Modern purple gradient theme throughout
@@ -60,7 +70,16 @@ A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Au
    ```env
    OLLAMA_API_URL=http://localhost:11434/api/
    OLLAMA_JWT_TOKEN=your_jwt_token_here
+   
+   # Optional: Add free GenAI provider API keys
+   GROQ_API_KEY=your_groq_api_key_here
+   HUGGINGFACE_API_KEY=your_huggingface_api_key_here
+   TOGETHER_API_KEY=your_together_api_key_here
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
+   DEFAULT_GENAI_PROVIDER=groq
    ```
+   
+   See [FREE_GENAI_PROVIDERS.md](FREE_GENAI_PROVIDERS.md) for detailed setup instructions.
 
 3. **Create Required Directories**
    ```bash

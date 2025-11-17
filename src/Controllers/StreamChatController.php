@@ -5,6 +5,7 @@
 	use GuzzleHttp\Client;
 	use App\Services\RAGService;
 	use App\Services\EmbeddingService;
+	use App\Services\GenAI\GenAIFactory;
 	use App\Database\Database;
 	
 	$config = require __DIR__ . '/../../src/config.php';
@@ -22,10 +23,29 @@
 		$input = json_decode(file_get_contents('php://input'), true);
 		$message = $_POST['message'] ?? $input['message'] ?? '';
 		$model = $_POST['model'] ?? $input['model'] ?? 'llama3';
+		$provider = $_POST['provider'] ?? $input['provider'] ?? $config['defaultProvider'] ?? 'ollama';
 		$file = $_FILES['file'] ?? null;
 		$useRAG = isset($_POST['use_rag']) ? filter_var($_POST['use_rag'], FILTER_VALIDATE_BOOLEAN) : true;
 		$sessionId = $_POST['session_id'] ?? $input['session_id'] ?? null;
 		
+		// Try to detect provider from model name if not specified
+		if ($provider === 'ollama' || empty($provider)) {
+			$detectedProvider = GenAIFactory::detectProviderFromModel($model);
+			if ($detectedProvider !== 'ollama') {
+				$provider = $detectedProvider;
+			}
+		}
+		
+		// Get the appropriate provider
+		try {
+			$genAIProvider = GenAIFactory::getProvider($provider);
+		} catch (Exception $e) {
+			// Fallback to Ollama if provider not available
+			$provider = 'ollama';
+			$genAIProvider = GenAIFactory::getProvider('ollama');
+		}
+		
+		// Keep Ollama client for RAG (embeddings still use Ollama)
 		$client = new Client([
 			'base_uri' => $ollamaApiUrl,
 			'timeout' => 300.0,
@@ -55,57 +75,37 @@
 			}
 		}
 		
-		$data = [
-			'model' => $model,
-			'prompt' => $message,
-			'stream' => true,
-			'options' => [
-				'num_thread' => 8,
-				'num_ctx' => 4096,
-			],
+		$options = [
+			'temperature' => 0.7,
+			'max_tokens' => 2048,
 		];
 		
-		if ($file && is_uploaded_file($file['tmp_name'])) {
-			$imageData = base64_encode(file_get_contents($file['tmp_name']));
-			$data['images'] = [$imageData];
+		// For Ollama, add specific options
+		if ($provider === 'ollama') {
+			$options['num_thread'] = 8;
+			$options['num_ctx'] = 4096;
 		}
 		
 		try {
-			$response = $client->post('generate', [
-				'json' => $data,
-				'stream' => true,
-			]);
-			
 			$fullResponse = '';
-			$stream = $response->getBody();
 			
-			// Stream response chunks
-			while (!$stream->eof()) {
-				$line = $stream->readLine();
-				if (empty(trim($line))) continue;
+			// Use provider's streaming method
+			$genAIProvider->stream($message, $model, $options, function($chunk, $done) use (&$fullResponse) {
+				$fullResponse .= $chunk;
 				
-				$data = json_decode($line, true);
-				if (isset($data['response'])) {
-					$fullResponse .= $data['response'];
-					
-					// Send chunk to client
-					echo "data: " . json_encode([
-						'type' => 'chunk',
-						'content' => $data['response'],
-						'done' => $data['done'] ?? false
-					]) . "\n\n";
-					
-					// Flush output immediately
-					if (ob_get_level() > 0) {
-						ob_flush();
-					}
-					flush();
-					
-					if (isset($data['done']) && $data['done']) {
-						break;
-					}
+				// Send chunk to client
+				echo "data: " . json_encode([
+					'type' => 'chunk',
+					'content' => $chunk,
+					'done' => $done
+				]) . "\n\n";
+				
+				// Flush output immediately
+				if (ob_get_level() > 0) {
+					ob_flush();
 				}
-			}
+				flush();
+			});
 			
 			// Store in database if session exists
 			if ($sessionId && !empty($fullResponse)) {
@@ -142,6 +142,7 @@
 					// Send completion event
 					echo "data: " . json_encode([
 						'type' => 'done',
+						'provider' => $provider,
 						'context_used' => !empty($contextChunks),
 						'context_count' => count($contextChunks)
 					]) . "\n\n";
