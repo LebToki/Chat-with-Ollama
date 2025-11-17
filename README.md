@@ -81,7 +81,7 @@ A modern, RAG-powered AI chat application that integrates with Ollama for local 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/chat-with-ollama.git
+git clone https://github.com/{{GITHUB_USERNAME}}/{{GITHUB_REPO}}.git
 cd chat-with-ollama
 ```
 
@@ -340,4 +340,4 @@ For issues, questions, or feature requests, please open an issue on GitHub or vi
 
 ---
 
-**Made with ❤️ by 2TInteractive**
+**Made with ❤️ by {{COMPANY_NAME}}**

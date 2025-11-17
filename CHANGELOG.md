@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.2.0] - 2025-01-XX
+## [2.2.0] - 2025-01-15
 
 ### Added
 - **Branding Configuration**: Configurable developer name, company name, and URLs via environment variables
