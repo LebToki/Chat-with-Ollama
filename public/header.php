@@ -68,6 +68,31 @@
                 <!-- Chat sessions will be loaded here -->
             </div>
         </div>
+        
+        <!-- GitHub Community Section -->
+        <div class="github-community" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--glass-border);">
+            <div style="font-weight: 600; font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
+                <i class="fab fa-github"></i> Community
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a href="https://github.com/yourusername/chat-with-ollama" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                    <i class="fas fa-star"></i>
+                    <span style="font-size: 13px;">Star on GitHub</span>
+                </a>
+                <a href="https://github.com/yourusername/chat-with-ollama/fork" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                    <i class="fas fa-code-branch"></i>
+                    <span style="font-size: 13px;">Fork & Contribute</span>
+                </a>
+                <a href="https://github.com/yourusername/chat-with-ollama/issues" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                    <i class="fas fa-bug"></i>
+                    <span style="font-size: 13px;">Report Issues</span>
+                </a>
+                <a href="https://github.com/yourusername/chat-with-ollama/discussions" target="_blank" class="github-link" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-primary); background: var(--glass-bg); transition: all 0.2s;">
+                    <i class="fas fa-comments"></i>
+                    <span style="font-size: 13px;">Discussions</span>
+                </a>
+            </div>
+        </div>
     </div>
     
     <div class="modern-header">
@@ -80,8 +105,14 @@
             <button class="btn-icon" onclick="openDocumentsModal()" title="Manage Documents">
                 <i class="fas fa-folder-open"></i>
             </button>
+            <button class="btn-icon" onclick="toggleStreaming()" id="streaming-toggle" title="Toggle Streaming" data-streaming-enabled="true">
+                <i class="fas fa-stream"></i>
+            </button>
             <button class="btn-icon" onclick="syncModels()" title="Sync Models">
                 <i class="fas fa-sync-alt"></i>
             </button>
+            <a href="https://github.com/yourusername/chat-with-ollama" target="_blank" class="btn-icon" title="View on GitHub" style="text-decoration: none; color: inherit;">
+                <i class="fab fa-github"></i>
+            </a>
         </div>
     </div>

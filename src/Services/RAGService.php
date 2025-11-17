@@ -149,6 +149,92 @@ class RAGService
         }
     }
 
+    /**
+     * Optimized retrieval with caching and better query performance
+     */
+    public function retrieveRelevantChunksOptimized($query, $limit = 5)
+    {
+        try {
+            // Check cache first (simple in-memory cache using query hash)
+            $queryHash = md5($query);
+            static $cache = [];
+            if (isset($cache[$queryHash])) {
+                return $cache[$queryHash];
+            }
+            
+            $queryEmbedding = $this->embeddingService->generateEmbedding($query);
+            
+            // Optimized query with LIMIT to reduce memory usage
+            // Use vector similarity approximation if available, otherwise fetch all and compute
+            $stmt = $this->db->query("
+                SELECT ec.id, ec.chunk_id, ec.embedding, ec.model_name, dc.content, dc.document_id, d.original_filename
+                FROM embeddings ec
+                JOIN document_chunks dc ON ec.chunk_id = dc.id
+                JOIN documents d ON dc.document_id = d.id
+                WHERE d.status = 'processed'
+                LIMIT 1000
+            ");
+            
+            $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Parallel similarity computation (using array_map for better performance)
+            $scoredChunks = array_map(function($chunk) use ($queryEmbedding) {
+                $chunkEmbedding = json_decode($chunk['embedding'], true);
+                $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding);
+                
+                return [
+                    'chunk_id' => $chunk['chunk_id'],
+                    'content' => $chunk['content'],
+                    'document_id' => $chunk['document_id'],
+                    'filename' => $chunk['original_filename'],
+                    'similarity' => $similarity
+                ];
+            }, $chunks);
+            
+            // Sort and limit
+            usort($scoredChunks, function($a, $b) {
+                return $b['similarity'] <=> $a['similarity'];
+            });
+            
+            $result = array_slice($scoredChunks, 0, $limit);
+            
+            // Cache result (limit cache size)
+            if (count($cache) > 100) {
+                array_shift($cache); // Remove oldest
+            }
+            $cache[$queryHash] = $result;
+            
+            return $result;
+            
+        } catch (Exception $e) {
+            error_log("Optimized chunk retrieval failed: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Smart model selection based on query complexity
+     */
+    public function selectOptimalModel($defaultModel, $query, $availableModels = [])
+    {
+        // Simple heuristics for model selection
+        $queryLength = strlen($query);
+        $wordCount = str_word_count($query);
+        
+        // For short, simple queries, prefer faster/smaller models
+        if ($wordCount < 10 && $queryLength < 100) {
+            $fastModels = ['tinyllama', 'phi3', 'mistral:7b'];
+            foreach ($fastModels as $fastModel) {
+                if (in_array($fastModel, $availableModels) || empty($availableModels)) {
+                    return $fastModel;
+                }
+            }
+        }
+        
+        // For complex queries, use default or larger models
+        return $defaultModel;
+    }
+
     private function estimateTokenCount($text)
     {
         return (int) ceil(strlen($text) / 4);

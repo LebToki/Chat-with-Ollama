@@ -3,7 +3,6 @@
 	require __DIR__ . '/../../vendor/autoload.php';
 	
 	use GuzzleHttp\Client;
-	use GuzzleHttp\Promise;
 	use App\Services\RAGService;
 	use App\Services\EmbeddingService;
 	use App\Database\Database;
@@ -13,36 +12,35 @@
 	$ollamaApiUrl = $config['ollamaApiUrl'];
 	$jwtToken = $config['jwtToken'];
 	
-	header('Content-Type: application/json');
+	// Set headers for Server-Sent Events (SSE)
+	header('Content-Type: text/event-stream');
+	header('Cache-Control: no-cache');
+	header('Connection: keep-alive');
+	header('X-Accel-Buffering: no'); // Disable buffering for nginx
 	
 	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$input = json_decode(file_get_contents('php://input'), true);
 		$message = $_POST['message'] ?? $input['message'] ?? '';
 		$model = $_POST['model'] ?? $input['model'] ?? 'llama3';
-		$models = $_POST['models'] ?? $input['models'] ?? null; // Multiple models for parallel inference
-		$useParallel = isset($_POST['use_parallel']) ? filter_var($_POST['use_parallel'], FILTER_VALIDATE_BOOLEAN) : false;
-		$stream = isset($_POST['stream']) ? filter_var($_POST['stream'], FILTER_VALIDATE_BOOLEAN) : false;
 		$file = $_FILES['file'] ?? null;
 		$useRAG = isset($_POST['use_rag']) ? filter_var($_POST['use_rag'], FILTER_VALIDATE_BOOLEAN) : true;
 		$sessionId = $_POST['session_id'] ?? $input['session_id'] ?? null;
 		
 		$client = new Client([
 			'base_uri' => $ollamaApiUrl,
-			'timeout' => 120.0, // Increased for parallel requests
+			'timeout' => 300.0,
 			'headers' => [
 				'Content-Type' => 'application/json',
 				'Authorization' => 'Bearer ' . $jwtToken,
 			],
 		]);
 		
-		// RAG: Retrieve relevant context with parallel processing
+		// RAG: Retrieve relevant context
 		$contextChunks = [];
 		if ($useRAG && !empty($message)) {
 			try {
 				$embeddingService = new EmbeddingService($ollamaApiUrl, $jwtToken);
 				$ragService = new RAGService($embeddingService);
-				
-				// Use optimized parallel retrieval
 				$contextChunks = $ragService->retrieveRelevantChunksOptimized($message, 5);
 				
 				if (!empty($contextChunks)) {
@@ -57,10 +55,10 @@
 			}
 		}
 		
-		// Prepare base data
-		$baseData = [
+		$data = [
+			'model' => $model,
 			'prompt' => $message,
-			'stream' => $stream,
+			'stream' => true,
 			'options' => [
 				'num_thread' => 8,
 				'num_ctx' => 4096,
@@ -69,67 +67,48 @@
 		
 		if ($file && is_uploaded_file($file['tmp_name'])) {
 			$imageData = base64_encode(file_get_contents($file['tmp_name']));
-			$baseData['images'] = [$imageData];
+			$data['images'] = [$imageData];
 		}
 		
 		try {
-			// Parallel model inference for speed
-			if ($useParallel && $models && is_array($models) && count($models) > 1) {
-				$promises = [];
-				$modelData = [];
+			$response = $client->post('generate', [
+				'json' => $data,
+				'stream' => true,
+			]);
+			
+			$fullResponse = '';
+			$stream = $response->getBody();
+			
+			// Stream response chunks
+			while (!$stream->eof()) {
+				$line = $stream->readLine();
+				if (empty(trim($line))) continue;
 				
-				foreach ($models as $modelName) {
-					$modelData[$modelName] = array_merge($baseData, ['model' => $modelName]);
-					$promises[$modelName] = $client->postAsync('generate', [
-						'json' => $modelData[$modelName],
-					]);
-				}
-				
-				// Wait for first successful response (race condition for speed)
-				$results = Promise\Utils::settle($promises)->wait();
-				
-				$bestResponse = null;
-				$bestModel = null;
-				$fastestTime = PHP_INT_MAX;
-				
-				foreach ($results as $modelName => $result) {
-					if ($result['state'] === 'fulfilled') {
-						$response = $result['value'];
-						$responseData = json_decode($response->getBody()->getContents(), true);
-						
-						if (isset($responseData['response'])) {
-							// Use first successful response for speed
-							$bestResponse = $responseData['response'];
-							$bestModel = $modelName;
-							break; // Take first successful response
-						}
+				$data = json_decode($line, true);
+				if (isset($data['response'])) {
+					$fullResponse .= $data['response'];
+					
+					// Send chunk to client
+					echo "data: " . json_encode([
+						'type' => 'chunk',
+						'content' => $data['response'],
+						'done' => $data['done'] ?? false
+					]) . "\n\n";
+					
+					// Flush output immediately
+					if (ob_get_level() > 0) {
+						ob_flush();
+					}
+					flush();
+					
+					if (isset($data['done']) && $data['done']) {
+						break;
 					}
 				}
-				
-				if ($bestResponse) {
-					$botResponse = $bestResponse;
-					$model = $bestModel;
-				} else {
-					throw new Exception("All parallel requests failed");
-				}
-			} else {
-				// Single model inference with smart routing
-				$embeddingService = new EmbeddingService($ollamaApiUrl, $jwtToken);
-				$ragServiceForModel = new RAGService($embeddingService);
-				$model = $ragServiceForModel->selectOptimalModel($model, $message, $models ?? []);
-				
-				$data = array_merge($baseData, ['model' => $model]);
-				
-				$response = $client->post('generate', [
-					'json' => $data,
-				]);
-				
-				$result = json_decode($response->getBody()->getContents(), true);
-				$botResponse = $result['response'] ?? '';
 			}
 			
 			// Store in database if session exists
-			if ($sessionId) {
+			if ($sessionId && !empty($fullResponse)) {
 				try {
 					$db = Database::getInstance()->getConnection();
 					
@@ -152,30 +131,33 @@
 					");
 					$stmt->execute([
 						':session_id' => $sessionId,
-						':content' => $botResponse,
+						':content' => $fullResponse,
 						':model' => $model
 					]);
 					
 					// Update session timestamp
 					$stmt = $db->prepare("UPDATE chat_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = :id");
 					$stmt->execute([':id' => $sessionId]);
+					
+					// Send completion event
+					echo "data: " . json_encode([
+						'type' => 'done',
+						'context_used' => !empty($contextChunks),
+						'context_count' => count($contextChunks)
+					]) . "\n\n";
+					
 				} catch (Exception $e) {
 					error_log("Failed to store chat message: " . $e->getMessage());
 				}
 			}
 			
-			echo json_encode([
-				'response' => $botResponse,
-				'model_used' => $model,
-				'context_used' => !empty($contextChunks),
-				'context_count' => count($contextChunks),
-				'parallel_mode' => $useParallel
-			]);
 		} catch (Exception $e) {
-			http_response_code(500);
-			echo json_encode(['error' => $e->getMessage()]);
+			echo "data: " . json_encode([
+				'type' => 'error',
+				'error' => $e->getMessage()
+			]) . "\n\n";
 		}
 	} else {
 		http_response_code(405);
-		echo json_encode(['error' => 'Invalid request method']);
+		echo "data: " . json_encode(['error' => 'Invalid request method']) . "\n\n";
 	}
