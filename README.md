@@ -18,7 +18,10 @@
 
 <img width="1896" height="916" alt="Chatbot" src="https://github.com/user-attachments/assets/9b0f6916-2dfc-46c8-9e2a-832d8beb2f84" />
 <img width="1893" height="914" alt="Documents Management" src="https://github.com/user-attachments/assets/52fb8db9-5d53-417a-b7d5-cc8063bb1bba" />
+<img width="1898" height="909" alt="Settings" src="https://github.com/user-attachments/assets/9dfb929b-6491-410c-8ca5-038175957997" />
 
+---
+In the coding oven after quite a long time!
 ---
 
 ## ✨ Features
