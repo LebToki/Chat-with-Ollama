@@ -81,8 +81,10 @@ class Database
             "CREATE TABLE IF NOT EXISTS chat_sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT,
+                document_id INTEGER,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE SET NULL
             )",
             
             "CREATE TABLE IF NOT EXISTS chat_messages (

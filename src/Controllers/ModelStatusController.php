@@ -8,7 +8,7 @@ $config = require __DIR__ . '/../config.php';
 $ollamaApiUrl = $config['ollamaApiUrl'];
 $jwtToken = $config['jwtToken'];
 
-$model = $_GET['model'] ?? 'llama3';
+$model = $_GET['model'] ?? 'llama3.2:latest';
 
 $client = new Client([
     'base_uri' => $ollamaApiUrl,

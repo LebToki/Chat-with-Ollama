@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateModelStatus();
 
     syncModelsBtn.addEventListener('click', function() {
-        axios.get('/public/fetch_models.php')
+        axios.get('/fetch_models.php')
             .then(function(response) {
                 var data = response.data;
                 if (data.success) {

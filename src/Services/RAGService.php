@@ -108,18 +108,29 @@ class RAGService
         ]);
     }
 
-    public function retrieveRelevantChunks($query, $limit = 5)
+    public function retrieveRelevantChunks($query, $limit = 5, $documentIds = null)
     {
         try {
             $queryEmbedding = $this->embeddingService->generateEmbedding($query);
             
-            $stmt = $this->db->query("
+            // Build query with optional document filter
+            $sql = "
                 SELECT ec.id, ec.chunk_id, ec.embedding, ec.model_name, dc.content, dc.document_id, d.original_filename
                 FROM embeddings ec
                 JOIN document_chunks dc ON ec.chunk_id = dc.id
                 JOIN documents d ON dc.document_id = d.id
                 WHERE d.status = 'processed'
-            ");
+            ";
+            
+            $params = [];
+            if ($documentIds && is_array($documentIds) && !empty($documentIds)) {
+                $placeholders = implode(',', array_fill(0, count($documentIds), '?'));
+                $sql .= " AND d.id IN ($placeholders)";
+                $params = $documentIds;
+            }
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             
             $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -170,7 +181,57 @@ class RAGService
 
     public function deleteDocument($documentId)
     {
+        // Get document info before deletion to delete physical file
+        $stmt = $this->db->prepare("SELECT file_path FROM documents WHERE id = :id");
+        $stmt->execute([':id' => $documentId]);
+        $document = $stmt->fetch();
+        
+        // Delete from database (cascade will delete chunks and embeddings automatically)
         $stmt = $this->db->prepare("DELETE FROM documents WHERE id = :id");
-        return $stmt->execute([':id' => $documentId]);
+        $result = $stmt->execute([':id' => $documentId]);
+        
+        // Delete physical file if it exists
+        if ($document && !empty($document['file_path']) && file_exists($document['file_path'])) {
+            @unlink($document['file_path']);
+        }
+        
+        return $result;
+    }
+
+    public function getDocumentPreview($documentId, $limit = 50)
+    {
+        $stmt = $this->db->prepare("
+            SELECT d.*, 
+                   COUNT(dc.id) as chunk_count
+            FROM documents d
+            LEFT JOIN document_chunks dc ON d.id = dc.document_id
+            WHERE d.id = :id
+            GROUP BY d.id
+        ");
+        $stmt->execute([':id' => $documentId]);
+        $document = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$document) {
+            return null;
+        }
+        
+        // Get chunks for preview
+        $stmt = $this->db->prepare("
+            SELECT chunk_index, content, token_count
+            FROM document_chunks
+            WHERE document_id = :document_id
+            ORDER BY chunk_index ASC
+            LIMIT :limit
+        ");
+        $stmt->bindValue(':document_id', $documentId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'document' => $document,
+            'chunks' => $chunks,
+            'total_chunks' => (int)$document['chunk_count']
+        ];
     }
 }

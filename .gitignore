@@ -1,1 +1,55 @@
+# Dependencies
 /vendor/
+/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database files
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
+
+# Uploaded files
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Test files
+/testfiles/
+
+# Generated files
+/src/Models/models.json
+
+# Development files
+/devfiles/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Composer
+composer.phar
+
+# Backup files
+*.bak
+*.backup
+*~

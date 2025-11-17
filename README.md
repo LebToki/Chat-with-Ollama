@@ -1,186 +1,314 @@
-# Chat with Ollama - RAG-Powered AI Assistant
+# Chat with Ollama
 
-A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Augmented Generation) capabilities. Upload documents and have intelligent, context-aware conversations with your local AI models.
+A modern, RAG-powered AI chat application that integrates with Ollama for local AI inference. Chat with various Ollama models while leveraging your own documents for context-aware, intelligent responses.
 
-## ✨ Features
+![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-active-success)
+
+## Features
+
+### 🤖 AI Chat Interface
+- **Multiple Model Support**: Chat with any Ollama model installed on your server
+- **Session Management**: Organize conversations into separate chat sessions
+- **Rename Sessions**: Customize chat session names for better organization
+- **Markdown Rendering**: Beautifully formatted responses with code blocks, lists, and structured content
+- **Real-time Processing**: Visual feedback during AI processing with rotating messages
+
+### 📄 Document Management & RAG
+- **Document Upload**: Support for PDF, DOCX, TXT, Markdown (MD), PPT, PPTX, XLSX, and CSV files
+- **Automatic Processing**: Documents are automatically chunked and embedded for RAG
+- **Document-Specific Chats**: Create focused chat sessions linked to specific documents
+- **@ Mentions**: Reference specific documents in any chat using `@documentId`
+- **Inline Preview**: View document chunks and metadata directly in the interface
+- **Status Tracking**: Real-time status updates (pending, processing, processed, error)
+
+### 🔍 Smart Search & Filtering
+- **Full-Text Search**: Fast search across document names, types, and content
+- **Advanced Filtering**: Filter by status, file type, and more
+- **Sortable Columns**: Click column headers to sort documents
+- **Indexed Search**: Optimized search performance with built-in indexing
+
+### ⚙️ Settings & Customization
+- **Model Management**: Sync and manage Ollama models from the settings page
+- **Timezone Support**: Select from all IANA timezones for accurate date/time display
+- **Date/Time Formats**: Customize date (Short, Medium, Long, Full) and time (Short, Medium) formats
+- **RAG Toggle**: Enable/disable RAG on a per-message basis
+- **Default Settings**: Save your preferences for model, RAG, and date/time formats
 
 ### 🎨 Modern UI/UX
-- **Glassmorphism Design**: Beautiful frosted glass effects with smooth animations
-- **Gradient Accents**: Modern purple gradient theme throughout
-- **Responsive Layout**: Works seamlessly on desktop and mobile
-- **Smooth Animations**: Polished transitions and micro-interactions
-- **Dark Theme**: Easy on the eyes with customizable colors
+- **Dark Theme**: Beautiful dark mode interface with glassmorphism effects
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Accessibility**: ARIA labels, keyboard navigation, and focus indicators
+- **WowDash-Inspired**: Modern UI patterns with circular action buttons and glass cards
+- **Icon System**: Comprehensive icon system using Iconify with CDN fallbacks
 
-### 🧠 RAG (Retrieval-Augmented Generation)
-- **Document Upload**: Support for PDF, DOCX, TXT, XLSX, CSV, and MD files
-- **Intelligent Chunking**: Automatic text segmentation with overlap for context preservation
-- **Vector Embeddings**: Uses Ollama's embedding models for semantic search
-- **Context Retrieval**: Automatically finds relevant document chunks for each query
-- **Context-Aware Responses**: AI responses are enhanced with relevant document context
+## Screenshots
 
-### 💬 Chat Features
-- **Multiple Chat Sessions**: Create and manage multiple conversation threads
-- **Session History**: Persistent chat history stored in SQLite database
-- **Model Selection**: Choose from available Ollama models
-- **RAG Toggle**: Enable/disable RAG on the fly
-- **File Attachments**: Attach images and files to conversations
+<img width="1896" height="916" alt="Chatbot" src="https://github.com/user-attachments/assets/9b0f6916-2dfc-46c8-9e2a-832d8beb2f84" />
 
-### 📁 Document Management
-- **Drag & Drop Upload**: Intuitive file upload interface
-- **Document Library**: View all uploaded documents with status
-- **Processing Status**: Real-time status updates (pending, processing, processed)
-- **Chunk Information**: See how many chunks each document was split into
-- **Document Deletion**: Remove documents when no longer needed
+<img width="1647" height="910" alt="Documents Management" src="https://github.com/user-attachments/assets/06822734-51fd-411b-bc05-372d8922b273" />
 
-## 🚀 Installation
+<img width="1893" height="857" alt="Document Based Chats" src="https://github.com/user-attachments/assets/06a3c37f-9b3d-4c25-b2cb-2f2b1218be45" />
 
-### Prerequisites
-- PHP 7.4 or higher
-- Composer
-- Ollama installed and running locally
-- PHP extensions: `zip`, `sqlite3`, `gd` (for image handling)
+<img width="1903" height="910" alt="Chat With a Document" src="https://github.com/user-attachments/assets/355fde05-3d11-4d2b-b5b8-379a8d934e9d" />
 
-### Setup
+<img width="1898" height="909" alt="Settings" src="https://github.com/user-attachments/assets/9dfb929b-6491-410c-8ca5-038175957997" />
 
-1. **Install Dependencies**
-   ```bash
-   composer install
-   ```
+<img width="1892" height="865" alt="FAQ" src="https://github.com/user-attachments/assets/2ccbe6bf-707a-4960-abc3-fad47f5b5cc8" />
 
-2. **Configure Environment**
-   Edit `.env` file:
-   ```env
-   OLLAMA_API_URL=http://localhost:11434/api/
-   OLLAMA_JWT_TOKEN=your_jwt_token_here
-   ```
+## Requirements
 
-3. **Create Required Directories**
-   ```bash
-   mkdir -p data public/uploads
-   chmod 755 data public/uploads
-   ```
+- **PHP**: 8.1 or higher
+- **Ollama**: Installed and running locally or remotely
+- **Extensions**: 
+  - PDO with SQLite
+  - cURL
+  - ZIP (for DOCX/PPTX support)
+  - GD or ImageMagick (optional, for image processing)
+- **Composer**: For dependency management
+- **Web Server**: Apache/Nginx with mod_rewrite (or equivalent)
 
-4. **Install Embedding Model** (Required for RAG)
-   ```bash
-   ollama pull nomic-embed-text
-   ```
+## Installation
 
-5. **Start Development Server**
-   ```bash
-   php -S localhost:8000 -t public
-   ```
+### 1. Clone the Repository
 
-6. **Access the Application**
-   Open your browser to `http://localhost:8000/public/index.php`
+```bash
+git clone https://github.com/yourusername/chat-with-ollama.git
+cd chat-with-ollama
+```
 
-## 📖 Usage
+### 2. Install Dependencies
+
+```bash
+composer install
+```
+
+### 3. Configure Environment
+
+Copy the `.env.example` file to `.env` and configure your settings:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your Ollama configuration:
+
+```env
+OLLAMA_API_URL=http://localhost:11434/api
+OLLAMA_JWT_TOKEN=your_jwt_token_if_needed
+```
+
+### 4. Set Up Database
+
+The database will be automatically created on first run. Ensure the `data/` directory is writable:
+
+```bash
+mkdir -p data
+chmod 755 data
+```
+
+### 5. Install Ollama Embedding Model
+
+For RAG functionality, install the embedding model:
+
+```bash
+ollama pull nomic-embed-text
+```
+
+### 6. Configure Web Server
+
+#### Apache
+
+Ensure mod_rewrite is enabled and add to your `.htaccess`:
+
+```apache
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+```
+
+#### Nginx
+
+```nginx
+location / {
+    try_files $uri $uri/ /index.php?$query_string;
+}
+```
+
+## Usage
+
+### Starting a Chat
+
+1. Navigate to the application in your browser
+2. Select your preferred Ollama model from the header dropdown
+3. Type your message in the chat input
+4. Enable RAG (brain icon) to use document context
+5. Press Enter or click Send
 
 ### Uploading Documents
 
-1. Click on "Documents" in the sidebar or use the document icon in the header
-2. Drag and drop files or click to browse
-3. Wait for processing (documents are chunked and embedded automatically)
-4. Once processed, documents are available for RAG queries
+1. Go to the Documents page
+2. Click "Upload Document"
+3. Select your file (PDF, DOCX, TXT, etc.)
+4. Wait for processing to complete (status will update automatically)
+5. Once processed, documents are ready for RAG queries
 
-### Using RAG
+### Creating Document-Specific Chats
 
-1. Ensure RAG is enabled (brain icon in chat input should be highlighted)
-2. Upload relevant documents
-3. Ask questions naturally - the AI will automatically search your documents
-4. The AI will use relevant context from your documents to provide better answers
+1. Navigate to the Documents page
+2. Click the chat icon (💬) on any document
+3. A new chat session is created linked to that document
+4. All messages in that session will automatically use only that document's chunks
 
-### Managing Chat Sessions
+### Using @ Mentions
 
-- Click "New Chat" in the sidebar to start a fresh conversation
-- Recent chats appear in the sidebar
-- Each session maintains its own history and context
+1. In any chat, type `@` to see a dropdown of available documents
+2. Select a document to mention it
+3. Your message will include `@documentId`
+4. RAG will only search chunks from mentioned documents
 
-### Model Selection
+### Managing Settings
 
-- Use the model dropdown in the header to select your preferred Ollama model
-- Click the sync icon to refresh available models
-- Your selection is saved automatically
+1. Go to Settings page
+2. **Model Configuration**: Sync models, set default model, enable/disable RAG by default
+3. **Date & Time Format**: Select timezone, date format, and time format
+4. Settings are saved to browser localStorage
 
-## 🏗️ Architecture
+## RAG Workflow
 
-### Backend Structure
+The Retrieval-Augmented Generation (RAG) system works as follows:
+
+1. **Document Upload**: Upload your document (PDF, DOCX, etc.)
+2. **Text Extraction**: Content is extracted from the file
+3. **Chunking**: Text is split into overlapping chunks (1000 chars with 200 char overlap)
+4. **Embedding**: Each chunk is converted to vector embeddings using `nomic-embed-text`
+5. **Storage**: Embeddings are stored in SQLite database
+6. **Query Processing**: When you ask a question:
+   - Your question is converted to an embedding
+   - Similar chunks are found using cosine similarity
+   - Top 5 most relevant chunks are included as context
+   - The model generates a response using this context
+
+## API Endpoints
+
+### Chat API
+- `POST /api/chat.php` - Send a message and get AI response
+
+### Chat Sessions API
+- `POST /api/chat-session.php?action=create` - Create a new chat session
+- `POST /api/chat-session.php?action=list` - List all chat sessions
+- `POST /api/chat-session.php?action=get` - Get messages for a session
+- `POST /api/chat-session.php?action=delete` - Delete a chat session
+- `POST /api/chat-session.php?action=rename` - Rename a chat session
+- `POST /api/chat-session.php?action=cleanup_empty` - Delete empty sessions
+
+### RAG API
+- `POST /api/rag.php?action=upload` - Upload a document
+- `POST /api/rag.php?action=list` - List all documents
+- `POST /api/rag.php?action=delete` - Delete a document
+- `POST /api/rag.php?action=preview` - Get document preview with chunks
+- `POST /api/rag.php?action=list_for_mentions` - Get processed documents for @ mentions
+
+### Models API
+- `GET /api/models.php` - Get list of available Ollama models
+
+## Project Structure
 
 ```
-src/
-├── Controllers/
-│   ├── ChatController.php      # Main chat endpoint with RAG integration
-│   ├── RAGController.php       # Document upload and management
-│   └── ChatSessionController.php # Chat session management
-├── Services/
-│   ├── DocumentService.php     # Document parsing and chunking
-│   ├── EmbeddingService.php    # Vector embedding generation
-│   └── RAGService.php          # RAG orchestration and retrieval
-├── Database/
-│   └── Database.php            # SQLite database initialization
-└── Models/
-    └── Model.php               # Model data structure
+chat-with-ollama/
+├── public/                 # Public web root
+│   ├── api/               # API endpoints
+│   ├── assets/            # CSS, JS, images
+│   ├── index.php          # Main chat interface
+│   ├── documents.php      # Document management
+│   ├── settings.php       # Settings page
+│   └── help.php           # Help & documentation
+├── src/
+│   ├── Controllers/       # Request controllers
+│   ├── Services/          # Business logic
+│   ├── Database/          # Database layer
+│   └── Http/              # HTTP utilities
+├── data/                  # SQLite database (auto-created)
+├── uploads/               # Uploaded documents (auto-created)
+├── vendor/                # Composer dependencies
+└── .env                   # Environment configuration
 ```
 
-### Database Schema
+## Technologies Used
 
-- **documents**: Stores uploaded document metadata
-- **document_chunks**: Text chunks extracted from documents
-- **embeddings**: Vector embeddings for semantic search
-- **chat_sessions**: Chat conversation sessions
-- **chat_messages**: Individual messages within sessions
+- **Backend**: PHP 8.1+, SQLite
+- **Frontend**: Vanilla JavaScript, Axios, Bootstrap 5
+- **AI**: Ollama (local AI inference)
+- **Embeddings**: nomic-embed-text model
+- **Icons**: Iconify (with multi-CDN fallback)
+- **Styling**: Custom CSS with CSS Variables, Glassmorphism
 
-### RAG Flow
+## Troubleshooting
 
-1. **Document Upload** → File is parsed and text extracted
-2. **Chunking** → Text is split into overlapping chunks (~1000 tokens)
-3. **Embedding** → Each chunk is converted to a vector using Ollama
-4. **Storage** → Chunks and embeddings stored in database
-5. **Query** → User question is embedded
-6. **Retrieval** → Cosine similarity search finds relevant chunks
-7. **Context Injection** → Relevant chunks added to prompt
-8. **Response** → Ollama generates response with document context
+### Document Processing Issues
 
-## 🎨 Customization
-
-### Colors & Theme
-
-Edit `/public/assets/css/modern.css` to customize:
-- `--primary-gradient`: Main accent gradient
-- `--dark-bg`: Background color
-- `--glass-bg`: Glassmorphism background
-- `--accent`: Accent color
-
-### RAG Parameters
-
-In `src/Services/DocumentService.php`:
-- `chunkSize`: Size of text chunks (default: 1000)
-- `overlap`: Overlap between chunks (default: 200)
-
-In `src/Services/RAGService.php`:
-- `retrieveRelevantChunks()` limit: Number of chunks to retrieve (default: 5)
-
-## 🔧 Troubleshooting
-
-### Documents Not Processing
-- Ensure `nomic-embed-text` model is installed: `ollama pull nomic-embed-text`
-- Check PHP error logs for parsing errors
-- Verify file permissions on `data/` and `public/uploads/` directories
+- **Status stuck on "processing"**: Check if Ollama is running and `nomic-embed-text` model is installed
+- **Status shows "error"**: Check server error logs for details
+- **No chunks generated**: Document may be empty or contain only images
 
 ### RAG Not Working
-- Check that documents are in "processed" status
-- Verify Ollama is running and accessible
-- Ensure embedding model is available: `ollama list`
 
-### Database Issues
-- Delete `data/rag.db` to reset database
-- Ensure `data/` directory is writable
+- Ensure RAG toggle is enabled (brain icon in chat input)
+- Make sure you have at least one processed document
+- Verify `nomic-embed-text` model is installed: `ollama pull nomic-embed-text`
+- Check Ollama API connection in Settings
 
-## 📝 License
+### Model Loading Errors
 
-This project is open source and available for modification and distribution.
+- If you see "model loading" errors, the system will automatically retry up to 5 times
+- Wait a few moments and try again if the model is still loading
+- Check Ollama server status and ensure the model is available
 
-## 🙏 Acknowledgments
+### Iconify CDN Issues
 
-- Built with [Ollama](https://ollama.ai/) for local AI inference
-- Uses modern web technologies for a beautiful user experience
-- Implements RAG pattern for context-aware AI responses
+- The application includes automatic CDN fallback (jsDelivr, unpkg, cdnjs)
+- If all CDNs fail, a custom fallback element is used
+- Check browser console for CDN status messages
+
+## Development
+
+### Running Tests
+
+```bash
+# Test Ollama connectivity
+php public/ollama_tester.php
+
+# Test RAG workflow
+php devfiles/tests/test_rag_workflow.php
+
+# Test document processing
+php devfiles/tests/test_rag_simple.php
+```
+
+### Code Style
+
+The project follows PSR-12 coding standards.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
+
+## Credits
+
+Developed by **Tarek Tarabichi** from [2TInteractive](https://2tinteractive.com)
+
+Professional web development, AI integrations, and premium solutions for your business needs.
+
+## Support
+
+For issues, questions, or feature requests, please open an issue on GitHub or visit the Help & Docs page in the application.
+
+---
+
+**Made with ❤️ by 2TInteractive**
