@@ -11,7 +11,9 @@ A modern, RAG-powered AI chat application that integrates with Ollama for local 
 ![Version](https://img.shields.io/badge/version-2.2.0-blue)
 
 > **💡 Looking for Multi-Provider Support?**  
-> Check out **[NexusAI Chat](https://2tinteractive.com/nexusai)** - Our premium enterprise solution with support for Ollama, DeepSeek, OpenAI, Anthropic, and more! Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
+> Check out **[NexusAI Chat](https://2tinteractive.com/solutions/NexusAI)** - Our premium enterprise solution with support for Ollama, DeepSeek, OpenAI, Anthropic, and more! Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
+
+
 
 ## Features
 
@@ -63,6 +65,7 @@ A modern, RAG-powered AI chat application that integrates with Ollama for local 
 <img width="1898" height="909" alt="Settings" src="https://github.com/user-attachments/assets/9dfb929b-6491-410c-8ca5-038175957997" />
 
 <img width="1892" height="865" alt="FAQ" src="https://github.com/user-attachments/assets/2ccbe6bf-707a-4960-abc3-fad47f5b5cc8" />
+
 
 ## Requirements
 
