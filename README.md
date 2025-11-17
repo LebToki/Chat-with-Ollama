@@ -1,181 +1,186 @@
-# Chat with Ollama
+# Chat with Ollama - RAG-Powered AI Assistant
 
-Chat with Ollama leverages the Ollama API to provide an interactive chatbot experience. 
-The project is built with PHP and integrates seamlessly with the Ollama API to deliver a robust and flexible chatbot solution.
+A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Augmented Generation) capabilities. Upload documents and have intelligent, context-aware conversations with your local AI models.
 
+## ✨ Features
 
-![CHAT-WITH-OLLAMA-Promo](https://github.com/LebToki/Chat-with-Ollama/assets/957618/740710b7-777c-4b82-bfcf-89b4ed15b2cb)
+### 🎨 Modern UI/UX
+- **Glassmorphism Design**: Beautiful frosted glass effects with smooth animations
+- **Gradient Accents**: Modern purple gradient theme throughout
+- **Responsive Layout**: Works seamlessly on desktop and mobile
+- **Smooth Animations**: Polished transitions and micro-interactions
+- **Dark Theme**: Easy on the eyes with customizable colors
 
+### 🧠 RAG (Retrieval-Augmented Generation)
+- **Document Upload**: Support for PDF, DOCX, TXT, XLSX, CSV, and MD files
+- **Intelligent Chunking**: Automatic text segmentation with overlap for context preservation
+- **Vector Embeddings**: Uses Ollama's embedding models for semantic search
+- **Context Retrieval**: Automatically finds relevant document chunks for each query
+- **Context-Aware Responses**: AI responses are enhanced with relevant document context
 
-## Prerequisites
+### 💬 Chat Features
+- **Multiple Chat Sessions**: Create and manage multiple conversation threads
+- **Session History**: Persistent chat history stored in SQLite database
+- **Model Selection**: Choose from available Ollama models
+- **RAG Toggle**: Enable/disable RAG on the fly
+- **File Attachments**: Attach images and files to conversations
 
-- PHP 7.4+
+### 📁 Document Management
+- **Drag & Drop Upload**: Intuitive file upload interface
+- **Document Library**: View all uploaded documents with status
+- **Processing Status**: Real-time status updates (pending, processing, processed)
+- **Chunk Information**: See how many chunks each document was split into
+- **Document Deletion**: Remove documents when no longer needed
+
+## 🚀 Installation
+
+### Prerequisites
+- PHP 7.4 or higher
 - Composer
-- Node.js
-- npm
+- Ollama installed and running locally
+- PHP extensions: `zip`, `sqlite3`, `gd` (for image handling)
 
-## Installation
+### Setup
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/LebToki/chat-with-ollama.git
-    cd chat-with-ollama
-    ```
+1. **Install Dependencies**
+   ```bash
+   composer install
+   ```
 
-2. Install PHP dependencies:
-    ```sh
-    composer install
-    ```
+2. **Configure Environment**
+   Edit `.env` file:
+   ```env
+   OLLAMA_API_URL=http://localhost:11434/api/
+   OLLAMA_JWT_TOKEN=your_jwt_token_here
+   ```
 
-3. Install JavaScript dependencies:
-    ```sh
-    npm install
-    ```
+3. **Create Required Directories**
+   ```bash
+   mkdir -p data public/uploads
+   chmod 755 data public/uploads
+   ```
 
-4. Configure the environment variables in the `.env` file:
-    ```env
-    OLLAMA_API_URL=http://localhost:11434/api/
-    OLLAMA_JWT_TOKEN=YOUR_JWT_TOKEN_HERE
-    ```
+4. **Install Embedding Model** (Required for RAG)
+   ```bash
+   ollama pull nomic-embed-text
+   ```
 
-## Usage
+5. **Start Development Server**
+   ```bash
+   php -S localhost:8000 -t public
+   ```
 
-1. Start the PHP built-in server:
-```sh
-    php -S localhost:8000
+6. **Access the Application**
+   Open your browser to `http://localhost:8000/public/index.php`
+
+## 📖 Usage
+
+### Uploading Documents
+
+1. Click on "Documents" in the sidebar or use the document icon in the header
+2. Drag and drop files or click to browse
+3. Wait for processing (documents are chunked and embedded automatically)
+4. Once processed, documents are available for RAG queries
+
+### Using RAG
+
+1. Ensure RAG is enabled (brain icon in chat input should be highlighted)
+2. Upload relevant documents
+3. Ask questions naturally - the AI will automatically search your documents
+4. The AI will use relevant context from your documents to provide better answers
+
+### Managing Chat Sessions
+
+- Click "New Chat" in the sidebar to start a fresh conversation
+- Recent chats appear in the sidebar
+- Each session maintains its own history and context
+
+### Model Selection
+
+- Use the model dropdown in the header to select your preferred Ollama model
+- Click the sync icon to refresh available models
+- Your selection is saved automatically
+
+## 🏗️ Architecture
+
+### Backend Structure
+
+```
+src/
+├── Controllers/
+│   ├── ChatController.php      # Main chat endpoint with RAG integration
+│   ├── RAGController.php       # Document upload and management
+│   └── ChatSessionController.php # Chat session management
+├── Services/
+│   ├── DocumentService.php     # Document parsing and chunking
+│   ├── EmbeddingService.php    # Vector embedding generation
+│   └── RAGService.php          # RAG orchestration and retrieval
+├── Database/
+│   └── Database.php            # SQLite database initialization
+└── Models/
+    └── Model.php               # Model data structure
 ```
 
-2. Open your browser and navigate to `http://localhost:8000` unless you have a local stack then simply serve it on your own port
-```sh
-http://localhost:8000
-```
+### Database Schema
 
-3. Interact with the chatbot by typing a message in the input box and clicking the send button.
+- **documents**: Stores uploaded document metadata
+- **document_chunks**: Text chunks extracted from documents
+- **embeddings**: Vector embeddings for semantic search
+- **chat_sessions**: Chat conversation sessions
+- **chat_messages**: Individual messages within sessions
 
-## Configuration
+### RAG Flow
 
-The application uses [vlucas/phpdotenv](https://github.com/vlucas/phpdotenv) to load settings from the `.env` file. Make sure the following variables are defined:
+1. **Document Upload** → File is parsed and text extracted
+2. **Chunking** → Text is split into overlapping chunks (~1000 tokens)
+3. **Embedding** → Each chunk is converted to a vector using Ollama
+4. **Storage** → Chunks and embeddings stored in database
+5. **Query** → User question is embedded
+6. **Retrieval** → Cosine similarity search finds relevant chunks
+7. **Context Injection** → Relevant chunks added to prompt
+8. **Response** → Ollama generates response with document context
 
-```env
-OLLAMA_API_URL=http://localhost:11434/api/
-OLLAMA_JWT_TOKEN=YOUR_JWT_TOKEN_HERE
-```
+## 🎨 Customization
 
-### Choose Your Default Model
-Select your default model for the session from the header or set a default one in your settings page.
-![Settings Page](https://github.com/LebToki/chat-with-ollama/assets/957618/e7b157b7-4bdf-47ba-adfd-3912119d2790)
+### Colors & Theme
 
-### Settings Page
-This allows you to customize your journey as different models react differently at times.
-![image](https://github.com/LebToki/chat-with-ollama/assets/957618/ceeba82f-1014-47d6-a023-81c83c9a9caa)
+Edit `/public/assets/css/modern.css` to customize:
+- `--primary-gradient`: Main accent gradient
+- `--dark-bg`: Background color
+- `--glass-bg`: Glassmorphism background
+- `--accent`: Accent color
 
-### A bit of styling and we have a winner! 
-Once I get the file uploads to work, you'll be able to use it to chat with your files.
-![image](https://github.com/LebToki/chat-with-ollama/assets/957618/75d5eed5-b051-4940-bd4c-a728bba91eb1)
+### RAG Parameters
 
+In `src/Services/DocumentService.php`:
+- `chunkSize`: Size of text chunks (default: 1000)
+- `overlap`: Overlap between chunks (default: 200)
 
-Attention developers and chatbot enthusiasts! Are you ready to enhance your development experience with an intuitive chatbot interface? Look no further than our customized user interface designed specifically for Chat with Ollama.
+In `src/Services/RAGService.php`:
+- `retrieveRelevantChunks()` limit: Number of chunks to retrieve (default: 5)
 
-🚀 Pros & Devs love [Ollama](https://ollama.com/) and for sure will love our [Chat with Ollama](https://github.com/LebToki/chat-with-ollama) as the combination of these two makes it unbeatable!
+## 🔧 Troubleshooting
 
-<br>
+### Documents Not Processing
+- Ensure `nomic-embed-text` model is installed: `ollama pull nomic-embed-text`
+- Check PHP error logs for parsing errors
+- Verify file permissions on `data/` and `public/uploads/` directories
 
-Our UI automatically connects to the Ollama API, making it easy to manage your chat interactions. Plus, we've included an automated model selection feature for popular models like llama2 and llama3. We've gone the extra mile to provide a visually appealing and intuitive interface that's easy to navigate, so you can spend more time coding and less time configuring. And with a responsive design, you can access our UI on any device.
+### RAG Not Working
+- Check that documents are in "processed" status
+- Verify Ollama is running and accessible
+- Ensure embedding model is available: `ollama list`
 
-# Key Features
-- Pure Vanilla PHP, No Framework, No Headaches
-- Clean and Modern Design	
-- Efficient Management Seamless on Any Device	
-- Model Selection
-- Provides a clean and modern design that is both easy on the eyes and easy to navigate.	
-- Automated model detection for popular models like llama2 and llama3.	
-- Designed to work seamlessly on any device, from desktop computers to mobile phones.	
-- Automated model selection for popular models like llama2 and llama3.
+### Database Issues
+- Delete `data/rag.db` to reset database
+- Ensure `data/` directory is writable
 
-<br>
+## 📝 License
 
-# How to use
-Clone the repository and set up your project by following the instructions in the setup guide.
-Ensure your `OLLAMA_API_URL` and `OLLAMA_JWT_TOKEN` values are set in the `.env` file.
-Use the `public/fetch_models.php` script to automatically detect the models installed on your local Ollama server and update `src/Models/models.json`.
+This project is open source and available for modification and distribution.
 
-```sh
-php public/fetch_models.php
-```
+## 🙏 Acknowledgments
 
-Start interacting with the chatbot through the UI.
-
-
-#  Feedback
-- We're confident that our interface will enhance your chatbot development experience. Try it out today and let us know what you think! Join the discussions and let's make Chat with Ollama the best it can be.
-- Don't forget to star the project to stay up-to-date on future improvements, and please share your feedback with us. We're always looking for ways to make our interface even better for you.
-
-# Changelog
-What's New in 1.0.0 · June 2, 2024
-(major release with foundational features)
-
-- Introduced Dark Mode Support:
-
-- Implemented dark mode for a better user experience during night-time usage.
-
-- Enhanced Model Selection:
-
-- Automated fetching and selection of models from the Ollama API.
-- Improved UI for model selection and configuration.
-
-# Other Updates and Improvements:
-
-- Refactored HTML structure for better maintainability.
-- Improved overall styling with Bootstrap 5.
-- Enhanced chat functionalities with better error handling and UX improvements.
-
-📢️ Thanks everyone for your support and words of love for Chat with Ollama, I am committed to creating the best Chatbot Interface to support the ever-growing community.
-
-<details>
-<summary>Initial Release</summary>
-
-### Code Organization
-
-- Initial setup of the project with organized structure for controllers, models, and views.
-- Error Handling
-- Basic error handling for API requests and user inputs.
-
-### Front-end Enhancements
-
-- Initial design of the UI with Bootstrap and FontAwesome integration.
-Responsive design for better accessibility on all devices.
-
-### Performance Considerations
-
-- Basic optimizations for faster loading times.
-
-### Accessibility and Usability
-
-- Added alt attributes to all images for better accessibility.
-
-### Modern PHP Features
-
-- Utilized modern PHP features for better performance and readability.
-</details>
-
-For full details and former releases, check out the changelog.
-
-<br/>
-
-#  Get Involved
-Whether you're a developer, system integrator, or enterprise user, you can trust that we did everything possible to make it as smooth and easy as 1,2,3 to set up Chat with Ollama.
-
-⭐ Give us a star on GitHub 👆
-
-⭐ Fork the project on GitHub and contribute👆
-
-🚀 Do you like to code? You're more than welcome to contribute Join the Discussions!
-
-💡 Got a feature suggestion? Add your roadmap ideas
-
-<br/>
-
-This project is licensed under the Attribution License.
-
-<p xmlns:cc="http://creativecommons.org/ns#" >This work by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://2tinteractive">Tarek Tarabichi</a> is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"></a></p>
-2023-2024 · Tarek Tarabichi from 2TInteractive.com · Made with 💙
+- Built with [Ollama](https://ollama.ai/) for local AI inference
+- Uses modern web technologies for a beautiful user experience
+- Implements RAG pattern for context-aware AI responses
