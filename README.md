@@ -18,6 +18,8 @@
 
 <img width="1896" height="916" alt="Chatbot" src="https://github.com/user-attachments/assets/9b0f6916-2dfc-46c8-9e2a-832d8beb2f84" />
 <img width="1647" height="910" alt="Documents Management" src="https://github.com/user-attachments/assets/06822734-51fd-411b-bc05-372d8922b273" />
+<img width="1893" height="857" alt="Document Based Chats" src="https://github.com/user-attachments/assets/06a3c37f-9b3d-4c25-b2cb-2f2b1218be45" />
+
 <img width="1898" height="909" alt="Settings" src="https://github.com/user-attachments/assets/9dfb929b-6491-410c-8ca5-038175957997" />
 
 ---
