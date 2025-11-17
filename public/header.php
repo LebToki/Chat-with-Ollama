@@ -1,109 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>LiveLink</title>
-	<link rel="icon" type="image/png" href="./assets/img/bot-avatar.png">
-	<link rel="stylesheet" href="./assets/libs/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="./assets/libs/font-awesome/css/fontawesome.css">
-	<link rel="stylesheet" href="./assets/libs/font-awesome/css/all.css">
-	<link rel="stylesheet" href="./assets/libs/font-awesome/css/brands.css">
-	<link rel="stylesheet" href="./assets/libs/font-awesome/css/regular.css">
-	<link rel="stylesheet" href="./assets/libs/font-awesome/css/solid.css">
-	<link rel="stylesheet" href="./assets/css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Ollama - RAG Powered</title>
+    <link rel="icon" type="image/png" href="/public/assets/img/bot-avatar.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/assets/libs/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/public/assets/libs/font-awesome/css/all.css">
+    <link rel="stylesheet" href="/public/assets/css/modern.css">
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
-
-<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-	<a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">
-		<img src="./assets/img/Chat-With-Ollama-wide-Logo-Dark.png" style="height: 40px;" alt="LiveLink Logo">
-	</a>
-	<div class="d-flex align-items-center">
-		<div id="model-status" class="d-flex justify-content-end mt-3 me-2">
-			<select id="model-select" class="form-select bg-dark text-white">
-				<option value="">Select a model</option>
-				<?php
-                                       $modelsJson = @file_get_contents(__DIR__ . '/../src/Models/models.json');
-					if ($modelsJson === false) {
-						echo '<option value="" disabled>Error loading models</option>';
-					} else {
-						$models = json_decode($modelsJson, true);
-						$readyModels = array_filter($models, function ($model) {
-							return $model['ready'];
-						});
-						
-						if (empty($readyModels)) {
-							echo '<option value="" disabled>No models available</option>';
-						} else {
-							foreach ($readyModels as $model) {
-								$selected = ($model['name'] === 'your_default_model') ? 'selected' : ''; // Set your default model here
-								echo "<option value='{$model['name']}' $selected>{$model['name']} ({$model['description']})</option>";
-							}
-						}
-					}
-				?>
-			</select>
-			<button id="sync-models-btn" class="btn btn-sm btn-outline-secondary ms-2" type="button">
-				<i class="fas fa-sync-alt"></i> Sync
-			</button>
-		</div>
-		
-		<div class="dropdown ms-3">
-			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-				<img src="./assets/img/user-avatar.png" class="avatar" alt="User Avatar">
-			</a>
-			<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
-				<li><a class="dropdown-item" href="./profile.php">Profile</a></li>
-				<li><a class="dropdown-item" href="./settings.php">Settings</a></li>
-				<li><a class="dropdown-item" href="./logout.php">Logout</a></li>
-			</ul>
-		</div>
-	</div>
-</header>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modelBadge = document.getElementById('model-badge');
-        const modelSelect = document.getElementById('model-select');
-
-        function updateModelStatus() {
-            fetch('/src/Models/models.json')
-                .then(response => response.json())
-                .then(models => {
-                    if (models && models.length > 0) {
-                        const defaultModel = localStorage.getItem('defaultModel') || models[0].name;
-                        modelBadge.textContent = `${defaultModel} (Loading...)`;
-                        checkModelStatus(defaultModel);
-                    } else {
-                        modelBadge.textContent = 'No models available';
-                    }
-                })
-                .catch(error => {
-                    modelBadge.textContent = 'Error loading models';
-                    console.error('Failed to fetch models:', error);
-                });
-        }
-
-        function checkModelStatus(model) {
-            fetch('/src/Controllers/ChatController.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `message=&model=${model}`,
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        modelBadge.textContent = `${model} (Loading...)`;
-                    } else {
-                        modelBadge.textContent = `${model} (Ready)`;
-                    }
-                })
-                .catch(error => {
-                    modelBadge.textContent = 'Error checking model status';
-                    console.error('Error during POST request:', error);
-                });
-        }
-
-        updateModelStatus();
-    });
-</script>
+<body>
+    <div class="modern-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">Chat with Ollama</div>
+            <p style="color: var(--text-secondary); font-size: 14px;">RAG-Powered AI Assistant</p>
+        </div>
+        
+        <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+                <a href="/public/index.php" class="sidebar-nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="/public/documents.php" class="sidebar-nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'documents.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Documents</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="/public/settings.php" class="sidebar-nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="chat-sessions">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <span style="font-weight: 600; font-size: 14px; color: var(--text-secondary);">Recent Chats</span>
+                <button class="btn-icon" onclick="createNewChat()" style="width: 32px; height: 32px; font-size: 14px;">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div id="chat-sessions-list">
+                <!-- Chat sessions will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="modern-header">
+        <div>
+            <select id="model-select" class="model-select">
+                <option value="">Loading models...</option>
+            </select>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" onclick="openDocumentsModal()" title="Manage Documents">
+                <i class="fas fa-folder-open"></i>
+            </button>
+            <button class="btn-icon" onclick="syncModels()" title="Sync Models">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
