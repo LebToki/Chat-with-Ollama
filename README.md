@@ -17,6 +17,8 @@ A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Au
 - **Vector Embeddings**: Uses Ollama's embedding models for semantic search
 - **Context Retrieval**: Automatically finds relevant document chunks for each query
 - **Context-Aware Responses**: AI responses are enhanced with relevant document context
+- **Optimized Retrieval**: Caching and query optimization for faster RAG responses
+- **Parallel Processing**: Improved performance with optimized database queries
 
 ### 💬 Chat Features
 - **Multiple Chat Sessions**: Create and manage multiple conversation threads
@@ -24,6 +26,12 @@ A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Au
 - **Model Selection**: Choose from available Ollama models
 - **RAG Toggle**: Enable/disable RAG on the fly
 - **File Attachments**: Attach images and files to conversations
+- **Streaming Responses**: Real-time streaming for faster perceived performance
+- **Parallel Model Inference**: Use multiple models simultaneously for faster responses
+- **Smart Model Routing**: Automatically selects optimal model based on query complexity
+- **Typing Indicators**: Visual feedback during response generation
+- **Enhanced Markdown**: Improved code highlighting and formatting
+- **Export/Import**: Export and import chat sessions as JSON
 
 ### 📁 Document Management
 - **Drag & Drop Upload**: Intuitive file upload interface
@@ -108,17 +116,19 @@ A modern, beautiful chat interface powered by Ollama with full RAG (Retrieval-Au
 ```
 src/
 ├── Controllers/
-│   ├── ChatController.php      # Main chat endpoint with RAG integration
-│   ├── RAGController.php       # Document upload and management
-│   └── ChatSessionController.php # Chat session management
+│   ├── ChatController.php         # Main chat endpoint with RAG integration
+│   ├── StreamChatController.php   # Streaming chat endpoint (SSE)
+│   ├── RAGController.php          # Document upload and management
+│   ├── ChatSessionController.php  # Chat session management
+│   └── ExportController.php       # Export/import functionality
 ├── Services/
-│   ├── DocumentService.php     # Document parsing and chunking
-│   ├── EmbeddingService.php    # Vector embedding generation
-│   └── RAGService.php          # RAG orchestration and retrieval
+│   ├── DocumentService.php        # Document parsing and chunking
+│   ├── EmbeddingService.php       # Vector embedding generation
+│   └── RAGService.php            # RAG orchestration and retrieval (optimized)
 ├── Database/
-│   └── Database.php            # SQLite database initialization
+│   └── Database.php               # SQLite database initialization
 └── Models/
-    └── Model.php               # Model data structure
+    └── Model.php                  # Model data structure
 ```
 
 ### Database Schema
@@ -179,8 +189,53 @@ In `src/Services/RAGService.php`:
 
 This project is open source and available for modification and distribution.
 
+## 🚀 Performance Enhancements
+
+### Speed Optimizations
+- **Streaming Responses**: Server-Sent Events (SSE) for real-time token streaming
+- **Parallel Model Inference**: Race multiple models and use the fastest response
+- **Smart Model Selection**: Automatically routes simple queries to faster models
+- **RAG Caching**: In-memory caching of query embeddings and results
+- **Database Indexing**: Optimized indexes for faster queries
+- **Query Limits**: Limits embedding queries to top 1000 chunks for performance
+
+### How It Works
+1. **Streaming**: Responses stream token-by-token for immediate feedback
+2. **Parallel Models**: Multiple models process simultaneously, first response wins
+3. **Model Routing**: Short queries → fast models (tinyllama, phi3), complex → default model
+4. **RAG Caching**: Frequently asked questions are cached for instant responses
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. **Star the Repository**: Show your support by starring ⭐
+2. **Fork & Contribute**: Fork the repo and submit pull requests
+3. **Report Issues**: Found a bug? Open an issue
+4. **Join Discussions**: Share ideas and feedback in discussions
+
+### Quick Links
+- 🌟 [Star on GitHub](https://github.com/yourusername/chat-with-ollama)
+- 🍴 [Fork & Contribute](https://github.com/yourusername/chat-with-ollama/fork)
+- 🐛 [Report Issues](https://github.com/yourusername/chat-with-ollama/issues)
+- 💬 [Join Discussions](https://github.com/yourusername/chat-with-ollama/discussions)
+
+## 📊 Features Roadmap
+
+- [x] Streaming responses
+- [x] Parallel model inference
+- [x] Smart model routing
+- [x] RAG optimization
+- [x] Export/import functionality
+- [x] GitHub community integration
+- [ ] WebSocket support for real-time updates
+- [ ] Multi-user support
+- [ ] Advanced analytics dashboard
+- [ ] Plugin system for extensions
+
 ## 🙏 Acknowledgments
 
 - Built with [Ollama](https://ollama.ai/) for local AI inference
 - Uses modern web technologies for a beautiful user experience
 - Implements RAG pattern for context-aware AI responses
+- Enhanced with performance optimizations and community features

@@ -122,7 +122,7 @@ function uploadDocument(file) {
     });
 }
 
-function sendMessage() {
+function sendMessage(useStreaming = true) {
     const input = document.getElementById('chat-input');
     const message = input.value.trim();
     
@@ -135,14 +135,124 @@ function sendMessage() {
         input.style.height = 'auto';
     }
     
+    // Check if streaming is enabled (default: true for better UX)
+    const enableStreaming = useStreaming && localStorage.getItem('enableStreaming') !== 'false';
+    
+    if (enableStreaming) {
+        sendMessageStreaming(message);
+    } else {
+        sendMessageStandard(message);
+    }
+}
+
+function sendMessageStreaming(message) {
+    // Show loading indicator with typing animation
+    const loadingId = addMessage('', 'assistant', true);
+    const messageElement = document.getElementById(loadingId);
+    const contentDiv = messageElement.querySelector('.message-content');
+    contentDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('message', message);
+    formData.append('model', document.getElementById('model-select')?.value || 'llama3');
+    formData.append('use_rag', ragEnabled);
+    formData.append('stream', true);
+    if (currentSessionId) {
+        formData.append('session_id', currentSessionId);
+    }
+    
+    // Add files if any
+    uploadedFiles.forEach(file => {
+        formData.append('file', file);
+    });
+    
+    // Use fetch for streaming
+    fetch('/src/Controllers/StreamChatController.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Stream failed');
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let fullResponse = '';
+        
+        function readStream() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    // Update final message
+                    contentDiv.innerHTML = formatMessage(fullResponse);
+                    uploadedFiles = [];
+                    updateFilePreview();
+                    loadChatSessions();
+                    return;
+                }
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // Keep incomplete line in buffer
+                
+                lines.forEach(line => {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            if (data.type === 'chunk') {
+                                fullResponse += data.content;
+                                contentDiv.innerHTML = formatMessage(fullResponse) + '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+                                scrollToBottom();
+                            } else if (data.type === 'done') {
+                                contentDiv.innerHTML = formatMessage(fullResponse);
+                                if (data.context_used) {
+                                    showRAGIndicator(data.context_count);
+                                }
+                            } else if (data.type === 'error') {
+                                contentDiv.innerHTML = `<span style="color: var(--danger);">Error: ${data.error}</span>`;
+                            }
+                        } catch (e) {
+                            console.error('Parse error:', e);
+                        }
+                    }
+                });
+                
+                readStream();
+            }).catch(error => {
+                contentDiv.innerHTML = `<span style="color: var(--danger);">Error: ${error.message}</span>`;
+            });
+        }
+        
+        readStream();
+    })
+    .catch(error => {
+        removeMessage(loadingId);
+        addMessage(`Error: ${error.message}`, 'assistant');
+    });
+}
+
+function sendMessageStandard(message) {
     // Show loading indicator
     const loadingId = addMessage('...', 'assistant', true);
     
     // Prepare form data
     const formData = new FormData();
     formData.append('message', message);
-    formData.append('model', document.getElementById('model-select').value || 'llama3');
+    formData.append('model', document.getElementById('model-select')?.value || 'llama3');
     formData.append('use_rag', ragEnabled);
+    
+    // Check for parallel mode
+    const useParallel = localStorage.getItem('useParallelMode') === 'true';
+    if (useParallel) {
+        const selectedModels = getSelectedModels();
+        if (selectedModels.length > 1) {
+            selectedModels.forEach(model => {
+                formData.append('models[]', model);
+            });
+            formData.append('use_parallel', true);
+        }
+    }
+    
     if (currentSessionId) {
         formData.append('session_id', currentSessionId);
     }
@@ -168,12 +278,42 @@ function sendMessage() {
             if (response.data.context_used) {
                 showRAGIndicator(response.data.context_count);
             }
+            
+            // Show model used if parallel mode
+            if (response.data.parallel_mode && response.data.model_used) {
+                showNotification(`Used model: ${response.data.model_used}`, 'info');
+            }
         }
         
         uploadedFiles = [];
         updateFilePreview();
         loadChatSessions();
+    })
+    .catch(error => {
+        removeMessage(loadingId);
+        addMessage(`Error: ${error.message}`, 'assistant');
     });
+}
+
+function formatMessage(content) {
+    // Enhanced markdown formatting with code highlighting
+    return content
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>')
+        .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0;"><code>$2</code></pre>');
+}
+
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function getSelectedModels() {
+    // Get selected models from UI (if multi-select is implemented)
+    const modelSelect = document.getElementById('model-select');
+    return modelSelect ? [modelSelect.value] : ['llama3'];
 }
 
 function updateFilePreview() {
@@ -257,6 +397,37 @@ function toggleRAG() {
         'info'
     );
 }
+
+function toggleStreaming() {
+    const currentState = localStorage.getItem('enableStreaming') !== 'false';
+    const newState = !currentState;
+    localStorage.setItem('enableStreaming', newState.toString());
+    
+    const btn = document.getElementById('streaming-toggle');
+    if (btn) {
+        btn.dataset.streamingEnabled = newState;
+        btn.style.background = newState ? 'var(--primary-gradient)' : 'var(--glass-bg)';
+        btn.style.color = newState ? 'white' : 'var(--text-primary)';
+    }
+    
+    showNotification(
+        newState ? 'Streaming enabled - Faster responses' : 'Streaming disabled - Standard mode',
+        'info'
+    );
+}
+
+// Initialize streaming toggle state
+document.addEventListener('DOMContentLoaded', function() {
+    const streamingEnabled = localStorage.getItem('enableStreaming') !== 'false';
+    const btn = document.getElementById('streaming-toggle');
+    if (btn) {
+        btn.dataset.streamingEnabled = streamingEnabled;
+        if (streamingEnabled) {
+            btn.style.background = 'var(--primary-gradient)';
+            btn.style.color = 'white';
+        }
+    }
+});
 
 function updateModelList() {
     axios.get('/src/Models/models.json')

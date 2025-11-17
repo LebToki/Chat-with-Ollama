@@ -99,7 +99,10 @@ class Database
             "CREATE INDEX IF NOT EXISTS idx_document_chunks_document_id ON document_chunks(document_id)",
             "CREATE INDEX IF NOT EXISTS idx_embeddings_chunk_id ON embeddings(chunk_id)",
             "CREATE INDEX IF NOT EXISTS idx_embeddings_model ON embeddings(model_name)",
-            "CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id)"
+            "CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id)",
+            "CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at)",
+            "CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status)",
+            "CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated_at ON chat_sessions(updated_at)"
         ];
 
         foreach ($queries as $query) {

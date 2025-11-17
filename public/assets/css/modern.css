@@ -544,6 +544,40 @@ body::before {
     color: var(--text-primary);
 }
 
+/* Typing indicator */
+.typing-indicator {
+    display: inline-flex;
+    gap: 4px;
+    padding: 8px 0;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 /* Loading spinner */
 .spinner {
     width: 40px;
@@ -623,4 +657,14 @@ body::before {
         transform: translateX(100%);
         opacity: 0;
     }
+}
+
+/* GitHub community links */
+.github-link {
+    transition: all 0.2s ease;
+}
+
+.github-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-1px);
 }
