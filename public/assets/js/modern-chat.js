@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadChatSessions();
     loadDocuments();
     setupEventListeners();
-    updateModelList();
+    loadProviders();
 });
 
 function initializeChat() {
@@ -159,6 +159,7 @@ function sendMessageStreaming(message) {
     const formData = new FormData();
     formData.append('message', message);
     formData.append('model', document.getElementById('model-select')?.value || 'llama3');
+    formData.append('provider', document.getElementById('provider-select')?.value || 'ollama');
     formData.append('use_rag', ragEnabled);
     formData.append('stream', true);
     if (currentSessionId) {
@@ -257,6 +258,7 @@ function sendMessageStandard(message) {
     const formData = new FormData();
     formData.append('message', message);
     formData.append('model', document.getElementById('model-select')?.value || 'llama3');
+    formData.append('provider', document.getElementById('provider-select')?.value || 'ollama');
     formData.append('use_rag', ragEnabled);
     
     // Check for parallel mode
@@ -535,36 +537,112 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function updateModelList() {
-    axios.get('/src/Models/models.json')
+function loadProviders() {
+    axios.get('/src/Controllers/GenAIProviderController.php')
         .then(response => {
-            const models = response.data;
-            const select = document.getElementById('model-select');
-            select.innerHTML = '';
-            
-            if (models && models.length > 0) {
-                models.forEach(model => {
+            if (response.data.success && response.data.providers) {
+                const providerSelect = document.getElementById('provider-select');
+                providerSelect.innerHTML = '';
+                
+                response.data.providers.forEach(provider => {
                     const option = document.createElement('option');
-                    option.value = model.name;
-                    option.textContent = model.name;
-                    select.appendChild(option);
+                    option.value = provider.id;
+                    option.textContent = provider.name;
+                    providerSelect.appendChild(option);
                 });
                 
-                const savedModel = localStorage.getItem('defaultModel');
-                if (savedModel) {
-                    select.value = savedModel;
+                // Load saved provider or use default
+                const savedProvider = localStorage.getItem('defaultProvider');
+                if (savedProvider) {
+                    providerSelect.value = savedProvider;
                 } else {
-                    select.value = models[0].name;
+                    providerSelect.value = response.data.providers[0]?.id || 'ollama';
                 }
+                
+                // Update models when provider changes
+                providerSelect.addEventListener('change', function() {
+                    localStorage.setItem('defaultProvider', this.value);
+                    updateModelList();
+                });
+                
+                // Initial model list load
+                updateModelList();
             } else {
-                select.innerHTML = '<option value="">No models available</option>';
+                // Fallback to Ollama if providers endpoint fails
+                updateModelList();
             }
         })
         .catch(error => {
-            console.error('Failed to load models:', error);
+            console.error('Failed to load providers:', error);
+            // Fallback to Ollama
+            updateModelList();
         });
+}
+
+function updateModelList() {
+    const providerSelect = document.getElementById('provider-select');
+    const provider = providerSelect?.value || 'ollama';
+    const modelSelect = document.getElementById('model-select');
     
-    select.addEventListener('change', function() {
+    // For Ollama, use the existing models.json endpoint
+    if (provider === 'ollama') {
+        axios.get('/src/Models/models.json')
+            .then(response => {
+                const models = response.data;
+                modelSelect.innerHTML = '';
+                
+                if (models && models.length > 0) {
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = model.name;
+                        modelSelect.appendChild(option);
+                    });
+                    
+                    const savedModel = localStorage.getItem('defaultModel');
+                    if (savedModel) {
+                        modelSelect.value = savedModel;
+                    } else {
+                        modelSelect.value = models[0].name;
+                    }
+                } else {
+                    modelSelect.innerHTML = '<option value="">No models available</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load models:', error);
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            });
+    } else {
+        // For other providers, get models from provider endpoint
+        axios.get('/src/Controllers/GenAIProviderController.php')
+            .then(response => {
+                if (response.data.success && response.data.providers) {
+                    const selectedProvider = response.data.providers.find(p => p.id === provider);
+                    if (selectedProvider && selectedProvider.models) {
+                        modelSelect.innerHTML = '';
+                        selectedProvider.models.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model;
+                            option.textContent = model;
+                            modelSelect.appendChild(option);
+                        });
+                        
+                        if (selectedProvider.models.length > 0) {
+                            modelSelect.value = selectedProvider.models[0];
+                        }
+                    } else {
+                        modelSelect.innerHTML = '<option value="">No models available</option>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load provider models:', error);
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            });
+    }
+    
+    modelSelect.addEventListener('change', function() {
         localStorage.setItem('defaultModel', this.value);
     });
 }

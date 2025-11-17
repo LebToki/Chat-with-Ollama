@@ -6,6 +6,7 @@
 	use GuzzleHttp\Promise;
 	use App\Services\RAGService;
 	use App\Services\EmbeddingService;
+	use App\Services\GenAI\GenAIFactory;
 	use App\Database\Database;
 	
 	$config = require __DIR__ . '/../../src/config.php';
@@ -19,6 +20,7 @@
 		$input = json_decode(file_get_contents('php://input'), true);
 		$message = $_POST['message'] ?? $input['message'] ?? '';
 		$model = $_POST['model'] ?? $input['model'] ?? 'llama3';
+		$provider = $_POST['provider'] ?? $input['provider'] ?? $config['defaultProvider'] ?? 'ollama';
 		$models = $_POST['models'] ?? $input['models'] ?? null; // Multiple models for parallel inference
 		$useParallel = isset($_POST['use_parallel']) ? filter_var($_POST['use_parallel'], FILTER_VALIDATE_BOOLEAN) : false;
 		$stream = isset($_POST['stream']) ? filter_var($_POST['stream'], FILTER_VALIDATE_BOOLEAN) : false;
@@ -26,9 +28,27 @@
 		$useRAG = isset($_POST['use_rag']) ? filter_var($_POST['use_rag'], FILTER_VALIDATE_BOOLEAN) : true;
 		$sessionId = $_POST['session_id'] ?? $input['session_id'] ?? null;
 		
+		// Try to detect provider from model name if not specified
+		if ($provider === 'ollama' || empty($provider)) {
+			$detectedProvider = GenAIFactory::detectProviderFromModel($model);
+			if ($detectedProvider !== 'ollama') {
+				$provider = $detectedProvider;
+			}
+		}
+		
+		// Get the appropriate provider
+		try {
+			$genAIProvider = GenAIFactory::getProvider($provider);
+		} catch (Exception $e) {
+			// Fallback to Ollama if provider not available
+			$provider = 'ollama';
+			$genAIProvider = GenAIFactory::getProvider('ollama');
+		}
+		
+		// Keep Ollama client for RAG (embeddings still use Ollama)
 		$client = new Client([
 			'base_uri' => $ollamaApiUrl,
-			'timeout' => 120.0, // Increased for parallel requests
+			'timeout' => 120.0,
 			'headers' => [
 				'Content-Type' => 'application/json',
 				'Authorization' => 'Bearer ' . $jwtToken,
@@ -73,60 +93,22 @@
 		}
 		
 		try {
-			// Parallel model inference for speed
-			if ($useParallel && $models && is_array($models) && count($models) > 1) {
-				$promises = [];
-				$modelData = [];
-				
-				foreach ($models as $modelName) {
-					$modelData[$modelName] = array_merge($baseData, ['model' => $modelName]);
-					$promises[$modelName] = $client->postAsync('generate', [
-						'json' => $modelData[$modelName],
-					]);
-				}
-				
-				// Wait for first successful response (race condition for speed)
-				$results = Promise\Utils::settle($promises)->wait();
-				
-				$bestResponse = null;
-				$bestModel = null;
-				$fastestTime = PHP_INT_MAX;
-				
-				foreach ($results as $modelName => $result) {
-					if ($result['state'] === 'fulfilled') {
-						$response = $result['value'];
-						$responseData = json_decode($response->getBody()->getContents(), true);
-						
-						if (isset($responseData['response'])) {
-							// Use first successful response for speed
-							$bestResponse = $responseData['response'];
-							$bestModel = $modelName;
-							break; // Take first successful response
-						}
-					}
-				}
-				
-				if ($bestResponse) {
-					$botResponse = $bestResponse;
-					$model = $bestModel;
-				} else {
-					throw new Exception("All parallel requests failed");
-				}
-			} else {
-				// Single model inference with smart routing
-				$embeddingService = new EmbeddingService($ollamaApiUrl, $jwtToken);
-				$ragServiceForModel = new RAGService($embeddingService);
-				$model = $ragServiceForModel->selectOptimalModel($model, $message, $models ?? []);
-				
-				$data = array_merge($baseData, ['model' => $model]);
-				
-				$response = $client->post('generate', [
-					'json' => $data,
-				]);
-				
-				$result = json_decode($response->getBody()->getContents(), true);
-				$botResponse = $result['response'] ?? '';
+			// Use GenAI provider for generation
+			$options = [
+				'temperature' => 0.7,
+				'max_tokens' => 2048,
+			];
+			
+			// For Ollama, add specific options
+			if ($provider === 'ollama') {
+				$options['num_thread'] = 8;
+				$options['num_ctx'] = 4096;
 			}
+			
+			// Single model inference
+			$result = $genAIProvider->generate($message, $model, $options);
+			$botResponse = $result['response'] ?? '';
+			$model = $result['model_used'] ?? $model;
 			
 			// Store in database if session exists
 			if ($sessionId) {
@@ -167,6 +149,7 @@
 			echo json_encode([
 				'response' => $botResponse,
 				'model_used' => $model,
+				'provider' => $provider,
 				'context_used' => !empty($contextChunks),
 				'context_count' => count($contextChunks),
 				'parallel_mode' => $useParallel
