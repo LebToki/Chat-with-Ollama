@@ -146,11 +146,14 @@ function sendMessage(useStreaming = true) {
 }
 
 function sendMessageStreaming(message) {
-    // Show loading indicator with typing animation
+    // Show loading indicator with playful animated message
     const loadingId = addMessage('', 'assistant', true);
     const messageElement = document.getElementById(loadingId);
     const contentDiv = messageElement.querySelector('.message-content');
-    contentDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+    contentDiv.innerHTML = '<div class="playful-loading"><div class="playful-message"></div><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+    
+    // Start showing playful messages
+    showPlayfulMessages(loadingId);
     
     // Prepare form data
     const formData = new FormData();
@@ -183,6 +186,8 @@ function sendMessageStreaming(message) {
         function readStream() {
             reader.read().then(({ done, value }) => {
                 if (done) {
+                    // Stop playful messages
+                    stopPlayfulMessages();
                     // Update final message
                     contentDiv.innerHTML = formatMessage(fullResponse);
                     uploadedFiles = [];
@@ -200,15 +205,21 @@ function sendMessageStreaming(message) {
                         try {
                             const data = JSON.parse(line.slice(6));
                             if (data.type === 'chunk') {
+                                // Stop playful messages when content starts streaming
+                                if (fullResponse === '') {
+                                    stopPlayfulMessages();
+                                }
                                 fullResponse += data.content;
                                 contentDiv.innerHTML = formatMessage(fullResponse) + '<div class="typing-indicator"><span></span><span></span><span></span></div>';
                                 scrollToBottom();
                             } else if (data.type === 'done') {
+                                stopPlayfulMessages();
                                 contentDiv.innerHTML = formatMessage(fullResponse);
                                 if (data.context_used) {
                                     showRAGIndicator(data.context_count);
                                 }
                             } else if (data.type === 'error') {
+                                stopPlayfulMessages();
                                 contentDiv.innerHTML = `<span style="color: var(--danger);">Error: ${data.error}</span>`;
                             }
                         } catch (e) {
@@ -226,14 +237,21 @@ function sendMessageStreaming(message) {
         readStream();
     })
     .catch(error => {
+        stopPlayfulMessages();
         removeMessage(loadingId);
         addMessage(`Error: ${error.message}`, 'assistant');
     });
 }
 
 function sendMessageStandard(message) {
-    // Show loading indicator
-    const loadingId = addMessage('...', 'assistant', true);
+    // Show loading indicator with playful animated message
+    const loadingId = addMessage('', 'assistant', true);
+    const messageElement = document.getElementById(loadingId);
+    const contentDiv = messageElement.querySelector('.message-content');
+    contentDiv.innerHTML = '<div class="playful-loading"><div class="playful-message"></div><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+    
+    // Start showing playful messages
+    showPlayfulMessages(loadingId);
     
     // Prepare form data
     const formData = new FormData();
@@ -266,6 +284,8 @@ function sendMessageStandard(message) {
         headers: { 'Content-Type': 'multipart/form-data' }
     })
     .then(response => {
+        // Stop playful messages
+        stopPlayfulMessages();
         removeMessage(loadingId);
         
         if (response.data.error) {
@@ -290,6 +310,7 @@ function sendMessageStandard(message) {
         loadChatSessions();
     })
     .catch(error => {
+        stopPlayfulMessages();
         removeMessage(loadingId);
         addMessage(`Error: ${error.message}`, 'assistant');
     });
@@ -314,6 +335,91 @@ function getSelectedModels() {
     // Get selected models from UI (if multi-select is implemented)
     const modelSelect = document.getElementById('model-select');
     return modelSelect ? [modelSelect.value] : ['llama3'];
+}
+
+// Playful messages to show while waiting for Ollama response - all positive and smiley! 😊
+const playfulMessages = [
+    { text: '✨ Thinking deeply...', emoji: '🤔' },
+    { text: '🌟 Gathering wisdom...', emoji: '🧠' },
+    { text: '💫 Processing your question...', emoji: '⚡' },
+    { text: '🎯 Finding the perfect answer...', emoji: '😊' },
+    { text: '🚀 Almost there...', emoji: '🌈' },
+    { text: '🎨 Crafting a beautiful response...', emoji: '✨' },
+    { text: '🔍 Searching through knowledge...', emoji: '📚' },
+    { text: '💡 Connecting the dots...', emoji: '🔗' },
+    { text: '🎭 Preparing something special...', emoji: '🎬' },
+    { text: '🌊 Riding the waves of thought...', emoji: '🌊' },
+    { text: '🎪 Working my magic...', emoji: '🎩' },
+    { text: '🎯 Zeroing in on the answer...', emoji: '😄' },
+    { text: '🌟 Sparkling with ideas...', emoji: '💎' },
+    { text: '🎨 Painting with words...', emoji: '🖌️' },
+    { text: '🚀 Launching into response mode...', emoji: '🚀' },
+    { text: '🎵 Composing the perfect reply...', emoji: '🎵' },
+    { text: '🎪 The show is about to begin...', emoji: '🎭' },
+    { text: '🌈 Creating something colorful...', emoji: '🎨' },
+    { text: '✨ Adding a sprinkle of magic...', emoji: '✨' },
+    { text: '🎯 Bullseye incoming...', emoji: '🎯' },
+    { text: '😊 This is going to be great!', emoji: '😊' },
+    { text: '🌟 Excited to share this with you!', emoji: '😄' },
+    { text: '💫 Good things come to those who wait!', emoji: '😊' },
+    { text: '🎉 Almost ready to amaze you!', emoji: '🎉' },
+    { text: '✨ Worth the wait, I promise!', emoji: '😊' },
+    { text: '🚀 Preparing something awesome!', emoji: '😄' },
+    { text: '🎨 This will be worth it!', emoji: '😊' },
+    { text: '🌟 Great question! Let me think...', emoji: '🤔' },
+    { text: '💡 I\'ve got something good coming!', emoji: '😄' },
+    { text: '🎯 You\'re going to love this!', emoji: '😊' }
+];
+
+let playfulMessageInterval = null;
+let currentMessageIndex = 0;
+
+function showPlayfulMessages(messageId) {
+    const messageElement = document.getElementById(messageId);
+    if (!messageElement) return;
+    
+    const playfulMessageDiv = messageElement.querySelector('.playful-message');
+    if (!playfulMessageDiv) return;
+    
+    // Clear any existing interval
+    if (playfulMessageInterval) {
+        clearInterval(playfulMessageInterval);
+    }
+    
+    // Show first message immediately
+    updatePlayfulMessage(playfulMessageDiv);
+    
+    // Rotate messages every 2-3 seconds
+    playfulMessageInterval = setInterval(() => {
+        if (document.getElementById(messageId)) {
+            updatePlayfulMessage(playfulMessageDiv);
+        } else {
+            clearInterval(playfulMessageInterval);
+            playfulMessageInterval = null;
+        }
+    }, 2500);
+}
+
+function updatePlayfulMessage(element) {
+    const message = playfulMessages[currentMessageIndex % playfulMessages.length];
+    currentMessageIndex++;
+    
+    // Fade out
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(-10px)';
+    
+    setTimeout(() => {
+        element.innerHTML = `<span class="playful-emoji">${message.emoji}</span> <span class="playful-text">${message.text}</span>`;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+    }, 200);
+}
+
+function stopPlayfulMessages() {
+    if (playfulMessageInterval) {
+        clearInterval(playfulMessageInterval);
+        playfulMessageInterval = null;
+    }
 }
 
 function updateFilePreview() {
