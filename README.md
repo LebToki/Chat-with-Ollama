@@ -1,6 +1,6 @@
 # Chat with Ollama
 
-A modern, RAG-powered AI chat application that integrates with Ollama for local AI inference. Chat with various Ollama models while leveraging your own documents for context-aware, intelligent responses.
+A modern, self-hosted AI chat interface that brings document intelligence to Ollama. Upload your documents (PDF, DOCX, TXT, etc.) and chat with them using local AI models through Retrieval-Augmented Generation (RAG).
 
 ![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
