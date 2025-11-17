@@ -1,4 +1,4 @@
-# Chat with Ollama - Free Edition
+# Chat with Ollama - Open-Source Edition
 
 A modern, RAG-powered AI chat application that integrates with Ollama for local AI inference. Chat with various Ollama models while leveraging your own documents for context-aware, intelligent responses.
 
