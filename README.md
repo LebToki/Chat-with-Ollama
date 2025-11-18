@@ -15,10 +15,15 @@ A modern, RAG-powered AI chat application that integrates with Ollama for local 
 Our premium enterprise solution with support for Ollama, DeepSeek, OpenAI, Anthropic, and much more! 
 Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 
+---
 
 ## Features
 
+
 ### 🤖 AI Chat Interface
+
+<img width="1896" height="916" alt="Chatbot" src="https://github.com/user-attachments/assets/9b0f6916-2dfc-46c8-9e2a-832d8beb2f84" />
+
 - **Multiple Model Support**: Chat with any Ollama model installed on your server
 - **Session Management**: Organize conversations into separate chat sessions
 - **Rename Sessions**: Customize chat session names for better organization
@@ -26,20 +31,30 @@ Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 - **Real-time Processing**: Visual feedback during AI processing with rotating messages
 
 ### 📄 Document Management & RAG
+
+<img width="1647" height="910" alt="Documents Management" src="https://github.com/user-attachments/assets/06822734-51fd-411b-bc05-372d8922b273" />
+
 - **Document Upload**: Support for PDF, DOCX, TXT, Markdown (MD), PPT, PPTX, XLSX, and CSV files
 - **Automatic Processing**: Documents are automatically chunked and embedded for RAG
 - **Document-Specific Chats**: Create focused chat sessions linked to specific documents
 - **@ Mentions**: Reference specific documents in any chat using `@documentId`
 - **Inline Preview**: View document chunks and metadata directly in the interface
 - **Status Tracking**: Real-time status updates (pending, processing, processed, error)
+<img width="1893" height="857" alt="Document Based Chats" src="https://github.com/user-attachments/assets/06a3c37f-9b3d-4c25-b2cb-2f2b1218be45" />
 
 ### 🔍 Smart Search & Filtering
+
+<img width="1903" height="910" alt="Chat With a Document" src="https://github.com/user-attachments/assets/355fde05-3d11-4d2b-b5b8-379a8d934e9d" />
+
 - **Full-Text Search**: Fast search across document names, types, and content
 - **Advanced Filtering**: Filter by status, file type, and more
 - **Sortable Columns**: Click column headers to sort documents
 - **Indexed Search**: Optimized search performance with built-in indexing
 
 ### ⚙️ Settings & Customization
+
+<img width="1898" height="909" alt="Settings" src="https://github.com/user-attachments/assets/9dfb929b-6491-410c-8ca5-038175957997" />
+
 - **Model Management**: Sync and manage Ollama models from the settings page
 - **Timezone Support**: Select from all IANA timezones for accurate date/time display
 - **Date/Time Formats**: Customize date (Short, Medium, Long, Full) and time (Short, Medium) formats
@@ -47,26 +62,16 @@ Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 - **Default Settings**: Save your preferences for model, RAG, and date/time formats
 
 ### 🎨 Modern UI/UX
+
+<img width="1892" height="865" alt="FAQ" src="https://github.com/user-attachments/assets/2ccbe6bf-707a-4960-abc3-fad47f5b5cc8" />
+
 - **Dark Theme**: Beautiful dark mode interface with glassmorphism effects
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Accessibility**: ARIA labels, keyboard navigation, and focus indicators
 - **WowDash-Inspired**: Modern UI patterns with circular action buttons and glass cards
 - **Icon System**: Comprehensive icon system using Iconify with CDN fallbacks
 
-## Screenshots
-
-<img width="1896" height="916" alt="Chatbot" src="https://github.com/user-attachments/assets/9b0f6916-2dfc-46c8-9e2a-832d8beb2f84" />
-
-<img width="1647" height="910" alt="Documents Management" src="https://github.com/user-attachments/assets/06822734-51fd-411b-bc05-372d8922b273" />
-
-<img width="1893" height="857" alt="Document Based Chats" src="https://github.com/user-attachments/assets/06a3c37f-9b3d-4c25-b2cb-2f2b1218be45" />
-
-<img width="1903" height="910" alt="Chat With a Document" src="https://github.com/user-attachments/assets/355fde05-3d11-4d2b-b5b8-379a8d934e9d" />
-
-<img width="1898" height="909" alt="Settings" src="https://github.com/user-attachments/assets/9dfb929b-6491-410c-8ca5-038175957997" />
-
-<img width="1892" height="865" alt="FAQ" src="https://github.com/user-attachments/assets/2ccbe6bf-707a-4960-abc3-fad47f5b5cc8" />
-
+---
 
 ## Requirements
 
@@ -79,6 +84,9 @@ Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
   - GD or ImageMagick (optional, for image processing)
 - **Composer**: For dependency management
 - **Web Server**: Apache/Nginx with mod_rewrite (or equivalent)
+
+
+---
 
 ## Installation
 
@@ -148,6 +156,8 @@ location / {
 }
 ```
 
+---
+
 ## Usage
 
 ### Starting a Chat
@@ -201,6 +211,10 @@ The Retrieval-Augmented Generation (RAG) system works as follows:
    - Similar chunks are found using cosine similarity
    - Top 5 most relevant chunks are included as context
    - The model generates a response using this context
+
+
+---
+
 
 ## API Endpoints
 
@@ -256,6 +270,9 @@ chat-with-ollama/
 - **Icons**: Iconify (with multi-CDN fallback)
 - **Styling**: Custom CSS with CSS Variables, Glassmorphism
 
+---
+
+
 ## Troubleshooting
 
 ### Document Processing Issues
@@ -297,6 +314,9 @@ php devfiles/tests/test_rag_workflow.php
 # Test document processing
 php devfiles/tests/test_rag_simple.php
 ```
+
+
+---
 
 ### Code Style
 
