@@ -28,12 +28,15 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 <textarea 
                     id="chat-input" 
                     class="chat-input" 
-                    placeholder="Send a message"
+                    placeholder="Send a message (Press Enter to send, Shift+Enter for new line)"
                     rows="1"
                     aria-label="Chat message input"
                     aria-describedby="chat-input-help"
                 ></textarea>
                 <div class="input-actions">
+                    <button class="btn-icon" id="voice-input-btn" title="Voice input" aria-label="Voice input">
+                        <?php echo IconHelper::icon('mdi:microphone'); ?>
+                    </button>
                     <button class="btn-icon" id="rag-toggle" title="Toggle RAG" data-rag-enabled="true" aria-label="Toggle RAG (Retrieval Augmented Generation)" aria-pressed="true">
                         <?php echo IconHelper::icon(IconHelper::getRAGIcon()); ?>
                     </button>
@@ -44,7 +47,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
             </div>
             <div id="file-preview" style="display: none; margin-top: 12px;"></div>
             <div class="chat-footer-content">
-                <small style="line-height: 0.4; display: block; margin-top: 8px; color: var(--text-secondary); text-align: center;">Chatbots do make mistakes</small>
+                <small style="line-height: 0.4; display: block; margin-top: 8px; color: var(--text-secondary); text-align: center;">Chatbots do make mistakes • Press <kbd style="background: var(--glass-bg); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Ctrl+K</kbd> for keyboard shortcuts</small>
                 <div class="footer-credits-inline" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
                     <span style="font-size: 11px; color: var(--text-secondary);">Made with</span>
                     <iconify-icon icon="mdi:heart" style="color: #f85149; font-size: 12px;"></iconify-icon>
@@ -93,5 +96,6 @@ $assetsPath = getAssetsPath();
 ?>
 <script src="<?php echo $assetsPath; ?>/js/processing-messages.js?v=<?php echo time(); ?>"></script>
 <script src="<?php echo $assetsPath; ?>/js/modern-chat.js?v=<?php echo time(); ?>"></script>
+<script src="<?php echo $assetsPath; ?>/js/enhanced-chat.js?v=<?php echo time(); ?>"></script>
 
 <?php require __DIR__ . '/footer.php'; ?>
