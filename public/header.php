@@ -361,12 +361,34 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
                 <button class="btn-icon" onclick="toggleStreaming()" id="streaming-toggle" title="Toggle Streaming" data-streaming-enabled="true">
                     <?php echo IconHelper::icon('hugeicons:live-streaming-02'); ?>
                 </button>
+                <button class="btn-icon" onclick="toggleAutoScroll()" id="auto-scroll-toggle" title="Toggle Auto-Scroll" data-auto-scroll-enabled="true">
+                    <?php echo IconHelper::icon('mdi:arrow-down-bold'); ?>
+                </button>
             <?php endif; ?>
             <button class="btn-icon" onclick="syncModels()" title="Sync Local Models">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
+            </button>
+            <button class="btn-icon" onclick="showKeyboardShortcuts()" title="Keyboard Shortcuts">
+                <?php echo IconHelper::icon('mdi:keyboard'); ?>
             </button>
             <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>" target="_blank" class="btn-icon" title="View on GitHub" style="text-decoration: none; color: inherit;">
                 <?php echo IconHelper::icon('mdi:github'); ?>
             </a>
         </div>
     </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <iconify-icon icon="mdi:menu"></iconify-icon>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notification-container"></div>
+
+    <!-- Auto-Scroll Toggle Button -->
+    <button class="auto-scroll-toggle" id="auto-scroll-btn" onclick="toggleAutoScroll()" title="Auto-scroll to bottom">
+        <iconify-icon icon="mdi:arrow-down-bold"></iconify-icon>
+    </button>

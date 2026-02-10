@@ -425,6 +425,23 @@ function addMessage( content, role, isLoading = false ) {
 
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+    // Add enhanced message actions if not loading
+    if (!isLoading && typeof addMessageActions === 'function') {
+        addMessageActions(messageDiv, messageId, content, role);
+    }
+
+    // Add code block copy buttons
+    if (!isLoading) {
+        setTimeout(() => {
+            const codeBlocks = messageDiv.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                if (!block.querySelector('.code-block-header')) {
+                    addCodeBlockCopyButton(block);
+                }
+            });
+        }, 100);
+    }
+
     return messageId;
 }
 
