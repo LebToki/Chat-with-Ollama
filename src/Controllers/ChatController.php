@@ -61,8 +61,11 @@
 		if (RequestHelper::isMethod('POST')) {
 			$message = RequestHelper::getInput('message', '');
 			$model = RequestHelper::getInput('model', 'llama3.2:latest');
-			// Free version: Force Ollama provider only
-			$provider = 'ollama';
+			// Get provider from request or detect from model
+			$provider = RequestHelper::getInput('provider', '');
+			if (empty($provider)) {
+				$provider = GenAIFactory::detectProviderFromModel($model);
+			}
 			$file = RequestHelper::getFile('file');
 			
 			// Enhanced debug logging
@@ -92,11 +95,11 @@
 			
 			$sessionId = RequestHelper::getInput('session_id');
 			
-			// Free version: Only Ollama provider is available
+			// Get the appropriate provider
 			try {
-				$genAIProvider = GenAIFactory::getProvider('ollama');
+				$genAIProvider = GenAIFactory::getProvider($provider);
 			} catch (Exception $e) {
-				error_log("ChatController: Ollama provider not available: " . $e->getMessage());
+				error_log("ChatController: Provider '{$provider}' not available: " . $e->getMessage());
 				throw $e;
 			}
 		
