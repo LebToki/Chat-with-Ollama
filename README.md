@@ -11,14 +11,13 @@ A modern, RAG-powered AI chat application that integrates with Ollama for local 
 ![Version](https://img.shields.io/badge/version-2.2.0-blue)
 
 > **💡 Looking for Multi-Provider Support?**  
-> Check out **[NexusAI Chat](https://2tinteractive.com/solutions/NexusAI)** 
-Our premium enterprise solution with support for Ollama, DeepSeek, OpenAI, Anthropic, and much more! 
+> Check out **[NexusAI Chat](https://2tinteractive.com/solutions/NexusAI)**
+Our premium enterprise solution with support for Ollama, DeepSeek, OpenAI, Anthropic, and much more!
 Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 
 ---
 
 ## Features
-
 
 ### 🤖 AI Chat Interface
 
@@ -77,14 +76,13 @@ Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 
 - **PHP**: 8.1 or higher
 - **Ollama**: Installed and running locally or remotely
-- **Extensions**: 
+- **Extensions**:
   - PDO with SQLite
   - cURL
   - ZIP (for DOCX/PPTX support)
   - GD or ImageMagick (optional, for image processing)
 - **Composer**: For dependency management
 - **Web Server**: Apache/Nginx with mod_rewrite (or equivalent)
-
 
 ---
 
@@ -212,16 +210,16 @@ The Retrieval-Augmented Generation (RAG) system works as follows:
    - Top 5 most relevant chunks are included as context
    - The model generates a response using this context
 
-
 ---
-
 
 ## API Endpoints
 
 ### Chat API
+
 - `POST /api/chat.php` - Send a message and get AI response
 
 ### Chat Sessions API
+
 - `POST /api/chat-session.php?action=create` - Create a new chat session
 - `POST /api/chat-session.php?action=list` - List all chat sessions
 - `POST /api/chat-session.php?action=get` - Get messages for a session
@@ -230,6 +228,7 @@ The Retrieval-Augmented Generation (RAG) system works as follows:
 - `POST /api/chat-session.php?action=cleanup_empty` - Delete empty sessions
 
 ### RAG API
+
 - `POST /api/rag.php?action=upload` - Upload a document
 - `POST /api/rag.php?action=list` - List all documents
 - `POST /api/rag.php?action=delete` - Delete a document
@@ -237,6 +236,7 @@ The Retrieval-Augmented Generation (RAG) system works as follows:
 - `POST /api/rag.php?action=list_for_mentions` - Get processed documents for @ mentions
 
 ### Models API
+
 - `GET /api/models.php` - Get list of available Ollama models
 
 ## Project Structure
@@ -271,7 +271,6 @@ chat-with-ollama/
 - **Styling**: Custom CSS with CSS Variables, Glassmorphism
 
 ---
-
 
 ## Troubleshooting
 
@@ -315,7 +314,6 @@ php devfiles/tests/test_rag_workflow.php
 php devfiles/tests/test_rag_simple.php
 ```
 
-
 ---
 
 ### Code Style
@@ -333,6 +331,7 @@ This project is licensed under the MIT License.
 ## Free vs Premium
 
 **Chat with Ollama (Free Edition)** - This repository
+
 - ✅ Ollama integration (local AI)
 - ✅ RAG with document support
 - ✅ Session management
@@ -340,6 +339,7 @@ This project is licensed under the MIT License.
 - ✅ Community support
 
 **NexusAI Chat (Premium)** - Enterprise solution
+
 - ✅ All free features, plus:
 - ✅ Multi-provider support (DeepSeek, OpenAI, Anthropic, and more)
 - ✅ Team collaboration
@@ -361,4 +361,6 @@ For issues, questions, or feature requests, please open an issue on GitHub or vi
 
 ---
 
+
 **Made with ❤️ by 2TInteractive**
+
