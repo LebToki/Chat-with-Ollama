@@ -25,6 +25,10 @@ return [
     'togetheraiApiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
     'openrouterApiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
     
+    // Image Generation API Keys
+    'openaiApiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+    'stabilityApiKey' => $_ENV['STABILITY_API_KEY'] ?? '',
+    
     // Default provider
     'defaultProvider' => 'ollama',
     
