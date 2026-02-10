@@ -93,7 +93,7 @@ Visit [2tinteractive.com](https://2tinteractive.com) to learn more.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/{{GITHUB_USERNAME}}/{{GITHUB_REPO}}.git
+git clone https://github.com/LebToki/Chat-with-Ollama.git
 cd chat-with-ollama
 ```
 
