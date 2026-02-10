@@ -9,9 +9,59 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
 
 <div class="main-content">
     <div class="container-fluid" style="padding: 24px 32px;">
-        <!-- Two Column Layout -->
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
-            <!-- Left Column: Model Configuration -->
+        <!-- Three Column Layout -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+            <!-- Left Column: Ollama Configuration -->
+            <div class="glass-card">
+                <h2 style="margin-bottom: 24px; font-size: 20px;">Ollama Configuration</h2>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                        <input type="checkbox" id="ollama-cloud-mode" style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>Use Ollama Cloud API</span>
+                    </label>
+                    <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+                        Enable to use Ollama's cloud-hosted models instead of local instance.
+                    </p>
+                </div>
+                
+                <div id="ollama-local-config" style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                        Local Ollama URL
+                    </label>
+                    <input type="text" id="ollama-local-url" class="model-select" style="width: 100%;" 
+                           value="http://localhost:11434/api/" placeholder="http://localhost:11434/api/">
+                    <p style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
+                        URL of your local Ollama instance
+                    </p>
+                </div>
+                
+                <div id="ollama-cloud-config" style="margin-bottom: 24px; display: none;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                        Cloud API Key
+                    </label>
+                    <input type="password" id="ollama-cloud-api-key" class="model-select" style="width: 100%;" 
+                           placeholder="Enter your Ollama Cloud API key">
+                    <p style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
+                        Get your API key from <a href="https://ollama.com" target="_blank" style="color: var(--accent);">ollama.com</a>
+                    </p>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                        Connection Status
+                    </label>
+                    <div id="ollama-status" style="padding: 12px; background: var(--glass-bg); border-radius: 8px; border: 1px solid var(--glass-border);">
+                        <span style="color: var(--text-secondary);">Checking connection...</span>
+                    </div>
+                </div>
+                
+                <button class="btn-modern" onclick="testOllamaConnection()">
+                    <?php echo IconHelper::icon('mdi:connection'); ?> Test Connection
+                </button>
+            </div>
+            
+            <!-- Middle Column: Model Configuration -->
             <div class="glass-card">
                 <h2 style="margin-bottom: 24px; font-size: 20px;">Model Configuration</h2>
                 
@@ -45,6 +95,39 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
             </div>
             
             <!-- Middle Column: Date & Time Settings -->
+            <div class="glass-card">
+                <h2 style="margin-bottom: 24px; font-size: 20px;">Date & Time Format</h2>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                        Default Model
+                    </label>
+                    <div style="display: flex; gap: 12px;">
+                        <select id="settings-model-select" class="model-select" style="flex: 1;">
+                            <option value="">Loading models...</option>
+                        </select>
+                        <button class="btn-icon" onclick="syncModels()" title="Sync Models">
+                            <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                        <input type="checkbox" id="rag-enabled" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>Enable RAG by default</span>
+                    </label>
+                    <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+                        When enabled, the AI will automatically search your documents for relevant context.
+                    </p>
+                </div>
+                
+                <button class="btn-modern" onclick="saveSettings()">
+                    <?php echo IconHelper::icon(IconHelper::getActionIcon('save')); ?> Save Settings
+                </button>
+            </div>
+            
+            <!-- Right Column: Date & Time Settings -->
             <div class="glass-card">
                 <h2 style="margin-bottom: 24px; font-size: 20px;">Date & Time Format</h2>
                 
@@ -133,10 +216,19 @@ document.addEventListener('DOMContentLoaded', function() {
     loadSettings();
     loadDateTimeSettings();
     getTimeZones();
+    loadOllamaSettings();
     
     // Load saved RAG setting
     const ragEnabled = localStorage.getItem('ragEnabled') !== 'false';
     document.getElementById('rag-enabled').checked = ragEnabled;
+    
+    // Ollama cloud mode toggle
+    const cloudModeToggle = document.getElementById('ollama-cloud-mode');
+    if (cloudModeToggle) {
+        cloudModeToggle.addEventListener('change', function() {
+            toggleOllamaMode(this.checked);
+        });
+    }
     
     // Wait a bit for axios to load, then update model list (only once)
     setTimeout(function() {
@@ -568,6 +660,84 @@ function showNotification(message, type = 'info') {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// ============================================
+// Ollama Configuration Functions
+// ============================================
+
+function loadOllamaSettings() {
+    const cloudMode = localStorage.getItem('ollamaCloudMode') === 'true';
+    const localUrl = localStorage.getItem('ollamaLocalUrl') || 'http://localhost:11434/api/';
+    const cloudApiKey = localStorage.getItem('ollamaCloudApiKey') || '';
+    
+    const cloudModeToggle = document.getElementById('ollama-cloud-mode');
+    const localUrlInput = document.getElementById('ollama-local-url');
+    const cloudApiKeyInput = document.getElementById('ollama-cloud-api-key');
+    
+    if (cloudModeToggle) cloudModeToggle.checked = cloudMode;
+    if (localUrlInput) localUrlInput.value = localUrl;
+    if (cloudApiKeyInput) cloudApiKeyInput.value = cloudApiKey;
+    
+    toggleOllamaMode(cloudMode);
+}
+
+function toggleOllamaMode(isCloud) {
+    const localConfig = document.getElementById('ollama-local-config');
+    const cloudConfig = document.getElementById('ollama-cloud-config');
+    
+    if (isCloud) {
+        if (localConfig) localConfig.style.display = 'none';
+        if (cloudConfig) cloudConfig.style.display = 'block';
+    } else {
+        if (localConfig) localConfig.style.display = 'block';
+        if (cloudConfig) cloudConfig.style.display = 'none';
+    }
+    
+    localStorage.setItem('ollamaCloudMode', isCloud);
+}
+
+function testOllamaConnection() {
+    const isCloud = document.getElementById('ollama-cloud-mode').checked;
+    const statusDiv = document.getElementById('ollama-status');
+    
+    statusDiv.innerHTML = '<span style="color: var(--accent);">Testing connection...</span>';
+    
+    if (isCloud) {
+        const apiKey = document.getElementById('ollama-cloud-api-key').value;
+        if (!apiKey) {
+            statusDiv.innerHTML = '<span style="color: var(--danger);">Please enter your Cloud API key</span>';
+            return;
+        }
+        localStorage.setItem('ollamaCloudApiKey', apiKey);
+    } else {
+        const localUrl = document.getElementById('ollama-local-url').value;
+        localStorage.setItem('ollamaLocalUrl', localUrl);
+    }
+    
+    // Test connection via API
+    axios.post('/api/chat.php', {
+        message: 'test',
+        model: 'llama3',
+        use_rag: false
+    })
+    .then(response => {
+        if (response.data.response) {
+            statusDiv.innerHTML = '<span style="color: var(--success);">✓ Connection successful!</span>';
+            showNotification('Ollama connection successful!', 'success');
+            // Reload models after successful connection
+            modelListLoaded = false;
+            modelListLoading = false;
+            setTimeout(() => updateModelList(), 500);
+        } else {
+            statusDiv.innerHTML = '<span style="color: var(--danger);">✗ Connection failed</span>';
+            showNotification('Ollama connection failed', 'error');
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = '<span style="color: var(--danger);">✗ Connection failed: ' + (error.response?.data?.error || error.message) + '</span>';
+        showNotification('Ollama connection failed', 'error');
+    });
 }
 </script>
 

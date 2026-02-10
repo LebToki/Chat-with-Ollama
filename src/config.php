@@ -16,12 +16,20 @@ try {
 return [
     'ollamaApiUrl' => $_ENV['OLLAMA_API_URL'] ?? 'http://localhost:11434/api/',
     'jwtToken'      => $_ENV['OLLAMA_JWT_TOKEN'] ?? '',
+    'ollamaCloudApiKey' => $_ENV['OLLAMA_CLOUD_API_KEY'] ?? '',
+    'ollamaCloudMode' => filter_var($_ENV['OLLAMA_CLOUD_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN),
     
-    // Free version: Only Ollama is supported
-    // External provider API keys removed - upgrade to NexusAI Chat for multi-provider support
-    // Visit https://2tinteractive.com for premium features and multi-provider support
+    // Multi-Provider API Keys
+    'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? '',
+    'huggingfaceApiKey' => $_ENV['HUGGINGFACE_API_KEY'] ?? '',
+    'togetheraiApiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
+    'openrouterApiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
     
-    // Default provider: Only Ollama available in free version
+    // Image Generation API Keys
+    'openaiApiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+    'stabilityApiKey' => $_ENV['STABILITY_API_KEY'] ?? '',
+    
+    // Default provider
     'defaultProvider' => 'ollama',
     
     // Branding/Subscription Configuration

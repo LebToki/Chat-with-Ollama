@@ -361,5 +361,6 @@ For issues, questions, or feature requests, please open an issue on GitHub or vi
 
 ---
 
-**Made with ❤️ by 2TInteractive**  
-[2tinteractive.com](https://2tinteractive.com) | [GitHub](https://github.com/2tinteractive/chat-with-ollama)
+
+**Made with ❤️ by 2TInteractive**
+

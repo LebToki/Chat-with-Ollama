@@ -19,21 +19,43 @@ class GenAIFactory
     {
         $providerName = strtolower($providerName);
         
-        // Free version: Only allow Ollama provider
-        if ($providerName !== 'ollama') {
-            throw new Exception("Provider '{$providerName}' is not available in the free version. Only Ollama is supported. Upgrade to NexusAI Chat for multi-provider support: https://2tinteractive.com");
-        }
-        
         if (isset(self::$providers[$providerName])) {
             return self::$providers[$providerName];
         }
 
-        // Only Ollama provider is available in free version
         $config = require __DIR__ . '/../../config.php';
-        self::$providers[$providerName] = new OllamaProvider(
-            $config['ollamaApiUrl'] ?? null,
-            $config['jwtToken'] ?? null
-        );
+        
+        switch ($providerName) {
+            case 'ollama':
+                self::$providers[$providerName] = new OllamaProvider(
+                    $config['ollamaApiUrl'] ?? null,
+                    $config['jwtToken'] ?? null,
+                    $config['ollamaCloudApiKey'] ?? null
+                );
+                break;
+            case 'groq':
+                self::$providers[$providerName] = new GroqProvider(
+                    $config['groqApiKey'] ?? null
+                );
+                break;
+            case 'huggingface':
+                self::$providers[$providerName] = new HuggingFaceProvider(
+                    $config['huggingfaceApiKey'] ?? null
+                );
+                break;
+            case 'togetherai':
+                self::$providers[$providerName] = new TogetherAIProvider(
+                    $config['togetheraiApiKey'] ?? null
+                );
+                break;
+            case 'openrouter':
+                self::$providers[$providerName] = new OpenRouterProvider(
+                    $config['openrouterApiKey'] ?? null
+                );
+                break;
+            default:
+                throw new Exception("Unknown provider: '{$providerName}'");
+        }
 
         return self::$providers[$providerName];
     }
@@ -45,20 +67,30 @@ class GenAIFactory
      */
     public static function getAvailableProviders(): array
     {
-        // Free version: Only return Ollama provider
         $available = [];
+        $config = require __DIR__ . '/../../config.php';
         
-        try {
-            $provider = self::getProvider('ollama');
-            if ($provider->isAvailable()) {
-                $available[] = [
-                    'name' => $provider->getName(),
-                    'id' => 'ollama',
-                    'models' => $provider->getModels(),
-                ];
+        $providerClasses = [
+            'ollama' => ['class' => OllamaProvider::class, 'config_key' => 'ollamaApiUrl'],
+            'groq' => ['class' => GroqProvider::class, 'config_key' => 'groqApiKey'],
+            'huggingface' => ['class' => HuggingFaceProvider::class, 'config_key' => 'huggingfaceApiKey'],
+            'togetherai' => ['class' => TogetherAIProvider::class, 'config_key' => 'togetheraiApiKey'],
+            'openrouter' => ['class' => OpenRouterProvider::class, 'config_key' => 'openrouterApiKey'],
+        ];
+        
+        foreach ($providerClasses as $id => $providerInfo) {
+            try {
+                $provider = self::getProvider($id);
+                if ($provider->isAvailable()) {
+                    $available[] = [
+                        'name' => $provider->getName(),
+                        'id' => $id,
+                        'models' => $provider->getModels(),
+                    ];
+                }
+            } catch (Exception $e) {
+                // Provider not available, skip
             }
-        } catch (Exception $e) {
-            // Ollama not available
         }
         
         return $available;
@@ -72,8 +104,18 @@ class GenAIFactory
      */
     public static function detectProviderFromModel(string $model): string
     {
-        // Free version: Always return Ollama
-        // All models are assumed to be Ollama models in the free version
+        // Detect provider based on model name patterns
+        if (strpos($model, 'llama') !== false || strpos($model, 'mistral') !== false || strpos($model, 'phi') !== false) {
+            return 'ollama';
+        } elseif (strpos($model, 'groq') !== false || strpos($model, 'llama3-') === 0) {
+            return 'groq';
+        } elseif (strpos($model, '/') !== false && strpos($model, 'meta-llama') !== false) {
+            return 'huggingface';
+        } elseif (strpos($model, 'openai/') !== false || strpos($model, 'anthropic/') !== false || strpos($model, 'google/') !== false) {
+            return 'openrouter';
+        }
+        
+        // Default to ollama
         return 'ollama';
     }
 }
