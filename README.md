@@ -351,12 +351,9 @@ Visit [2tinteractive.com](https://2tinteractive.com) to learn more about NexusAI
 
 ## Credits
 
-Developed by **{{DEVELOPER_NAME}}** from [{{COMPANY_NAME}}]({{COMPANY_URL}})
+Developed by **Tarek Tarabichi** from [2TInteractive](https://2tinteractive.com)
 
 Professional web development, AI integrations, and premium solutions for your business needs.
-
-> **Note**: Replace `{{DEVELOPER_NAME}}`, `{{COMPANY_NAME}}`, and `{{COMPANY_URL}}` with your actual branding in the `.env` file or `src/config.php`.  
-> For example: `DEVELOPER_NAME=Your Name`, `COMPANY_NAME=Your Company`, `COMPANY_URL=https://yourcompany.com`
 
 ## Support
 
@@ -364,4 +361,4 @@ For issues, questions, or feature requests, please open an issue on GitHub or vi
 
 ---
 
-**Made with ❤️ by {{COMPANY_NAME}}**
+**Made with ❤️ by 2TInteractive**
