@@ -9,6 +9,9 @@ A modern, RAG-powered AI chat application that integrates with Ollama for local 
 ![Status](https://img.shields.io/badge/status-active-success)
 ![Provider](https://img.shields.io/badge/Provider-Ollama%20Only-orange)
 ![Version](https://img.shields.io/badge/version-2.2.0-blue)
+[![GitHub](https://img.shields.io/github/stars/LebToki/Chat-with-Ollama?style=social)](https://github.com/LebToki/Chat-with-Ollama)
+[![Buy Me A Coffee](https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg)](https://buymeacoffee.com/LebToki)
+[![Donate via Paypal](https://img.shields.io/badge/paypal-donate-blue.svg)](https://www.paypal.com/donate/?hosted_button_id=TEEJNYQJA9B6U)
 
 > **💡 Looking for Multi-Provider Support?**  
 > Check out **[NexusAI Chat](https://2tinteractive.com/solutions/NexusAI)**
