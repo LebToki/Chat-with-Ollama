@@ -105,9 +105,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function appendMessage(message, messageType) {
         const messageElement = document.createElement('div');
         messageElement.classList.add(messageType);
-        messageElement.textContent = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
+        
+        // Sanitize message content to prevent XSS
+        const sanitizedMessage = sanitizeHTML(typeof message === 'string' ? message : JSON.stringify(message, null, 2));
+        messageElement.innerHTML = sanitizedMessage;
+        
         document.getElementById('chatbox').appendChild(messageElement);
         messageElement.scrollIntoView();
+    }
+    
+    /**
+     * Sanitize HTML content to prevent XSS attacks
+     */
+    function sanitizeHTML(str) {
+        if (typeof str !== 'string') {
+            return str;
+        }
+        
+        return str
+            .replace(/&/g, '&')
+            .replace(/</g, '<')
+            .replace(/>/g, '>')
+            .replace(/"/g, '"')
+            .replace(/'/g, '&#39;');
     }
 
     fileButton.addEventListener('click', function() {

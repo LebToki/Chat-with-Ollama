@@ -18,12 +18,12 @@ class CodeExecutionService
     }
     
     /**
-     * Execute code in a sandboxed environment
+     * Execute code in a sandboxed environment with advanced features
      * 
      * @param string $code The code to execute
      * @param string $language The programming language
-     * @param array $options Additional options
-     * @return array Result with output, errors, and execution time
+     * @param array $options Additional options (timeout, memory_limit, dependencies, etc.)
+     * @return array Result with output, errors, execution time, and metadata
      */
     public function execute(string $code, string $language, array $options = []): array
     {
@@ -33,50 +33,108 @@ class CodeExecutionService
             throw new Exception("Language '{$language}' is not supported");
         }
         
+        // Apply advanced options
+        $timeout = $options['timeout'] ?? $this->timeout;
+        $memoryLimit = $options['memory_limit'] ?? $this->maxMemory;
+        $dependencies = $options['dependencies'] ?? [];
+        $environment = $options['environment'] ?? [];
+        
         // Sanitize code to prevent dangerous operations
         $sanitizedCode = $this->sanitizeCode($code, $language);
+        
+        // Add dependencies if specified
+        if (!empty($dependencies)) {
+            $sanitizedCode = $this->addDependencies($sanitizedCode, $language, $dependencies);
+        }
         
         $startTime = microtime(true);
         
         try {
             switch ($language) {
                 case 'python':
-                    $result = $this->executePython($sanitizedCode, $options);
+                    $result = $this->executePython($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 case 'javascript':
                 case 'js':
-                    $result = $this->executeJavaScript($sanitizedCode, $options);
+                    $result = $this->executeJavaScript($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 case 'php':
-                    $result = $this->executePHP($sanitizedCode, $options);
+                    $result = $this->executePHP($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 case 'bash':
                 case 'sh':
-                    $result = $this->executeBash($sanitizedCode, $options);
+                    $result = $this->executeBash($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 case 'ruby':
-                    $result = $this->executeRuby($sanitizedCode, $options);
+                    $result = $this->executeRuby($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 case 'go':
-                    $result = $this->executeGo($sanitizedCode, $options);
+                    $result = $this->executeGo($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 case 'rust':
-                    $result = $this->executeRust($sanitizedCode, $options);
+                    $result = $this->executeRust($sanitizedCode, $options, $timeout, $memoryLimit);
                     break;
                 default:
                     throw new Exception("Language '{$language}' is not implemented");
             }
+            
+            // Add execution metadata
+            $result['metadata'] = [
+                'language' => $language,
+                'timeout' => $timeout,
+                'memory_limit' => $memoryLimit,
+                'dependencies' => $dependencies,
+                'environment' => $environment,
+                'timestamp' => date('Y-m-d H:i:s'),
+                'execution_time' => $result['execution_time']
+            ];
+            
         } catch (Exception $e) {
             $result = [
                 'success' => false,
                 'output' => '',
                 'error' => $e->getMessage(),
                 'execution_time' => microtime(true) - $startTime,
+                'metadata' => [
+                    'language' => $language,
+                    'error_type' => get_class($e),
+                    'timestamp' => date('Y-m-d H:i:s')
+                ]
             ];
         }
         
         $result['execution_time'] = microtime(true) - $startTime;
         return $result;
+    }
+    
+    /**
+     * Add dependencies to code based on language
+     */
+    private function addDependencies(string $code, string $language, array $dependencies): string
+    {
+        switch ($language) {
+            case 'python':
+                $imports = '';
+                foreach ($dependencies as $dep) {
+                    $imports .= "import {$dep}\n";
+                }
+                return $imports . $code;
+                
+            case 'javascript':
+                $imports = '';
+                foreach ($dependencies as $dep) {
+                    $imports .= "const {$dep} = require('{$dep}');\n";
+                }
+                return $imports . $code;
+                
+            case 'go':
+                // Go dependencies would need to be handled differently
+                // This is a simplified version
+                return $code;
+                
+            default:
+                return $code;
+        }
     }
     
     /**
@@ -127,28 +185,46 @@ class CodeExecutionService
     }
     
     /**
-     * Execute Python code
+     * Execute Python code with enhanced security
      */
     private function executePython(string $code, array $options): array
     {
-        $tempFile = tempnam(sys_get_temp_dir(), 'python_');
-        file_put_contents($tempFile, $code);
+        // Create secure temporary directory
+        $tempDir = sys_get_temp_dir() . '/ollama_code_exec';
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0700, true);
+        }
         
+        $tempFile = tempnam($tempDir, 'python_');
+        $tempFileWithExt = $tempFile . '.py';
+        rename($tempFile, $tempFileWithExt);
+        $tempFile = $tempFileWithExt;
+        
+        // Write code with proper permissions
+        file_put_contents($tempFile, $code);
+        chmod($tempFile, 0600);
+        
+        // Enhanced command with resource limits and sandboxing
         $command = sprintf(
-            'timeout %d python3 %s 2>&1',
+            'timeout %d ulimit -v %d && python3 -I %s 2>&1',
             $this->timeout,
+            $this->maxMemory * 1024, // Convert MB to KB
             escapeshellarg($tempFile)
         );
         
-        $output = shell_exec($command);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        // Execute with timeout and capture result
+        $result = $this->executeWithTimeout($command, $this->timeout);
         
-        unlink($tempFile);
+        // Clean up
+        if (file_exists($tempFile)) {
+            unlink($tempFile);
+        }
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
@@ -344,6 +420,88 @@ class CodeExecutionService
             'success' => $exitCode == 0,
             'output' => $output ?? '',
             'error' => $exitCode != 0 ? $output : '',
+        ];
+    }
+    
+    /**
+     * Execute command with timeout and resource limits
+     */
+    private function executeWithTimeout(string $command, int $timeout): array
+    {
+        $startTime = microtime(true);
+        $output = '';
+        $error = '';
+        $exitCode = 0;
+        
+        // Use proc_open for better control
+        $descriptorspec = [
+            0 => ['pipe', 'r'],  // stdin
+            1 => ['pipe', 'w'],  // stdout
+            2 => ['pipe', 'w']   // stderr
+        ];
+        
+        $process = proc_open($command, $descriptorspec, $pipes);
+        
+        if (is_resource($process)) {
+            // Close stdin
+            fclose($pipes[0]);
+            
+            // Set non-blocking reads
+            stream_set_blocking($pipes[1], false);
+            stream_set_blocking($pipes[2], false);
+            
+            $timeoutMicroseconds = $timeout * 1000000;
+            $startMicroseconds = microtime(true) * 1000000;
+            
+            while (true) {
+                $status = proc_get_status($process);
+                
+                // Read output
+                $stdout = stream_get_contents($pipes[1]);
+                $stderr = stream_get_contents($pipes[2]);
+                
+                if ($stdout !== false) {
+                    $output .= $stdout;
+                }
+                if ($stderr !== false) {
+                    $error .= $stderr;
+                }
+                
+                // Check if process finished
+                if (!$status['running']) {
+                    $exitCode = $status['exitcode'];
+                    break;
+                }
+                
+                // Check timeout
+                $currentMicroseconds = microtime(true) * 1000000;
+                $elapsedMicroseconds = $currentMicroseconds - $startMicroseconds;
+                
+                if ($elapsedMicroseconds >= $timeoutMicroseconds) {
+                    // Kill process
+                    proc_terminate($process, 9);
+                    $error = "Process killed due to timeout ({$timeout}s)";
+                    $exitCode = 1;
+                    break;
+                }
+                
+                // Sleep briefly to avoid busy waiting
+                usleep(10000); // 10ms
+            }
+            
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($process);
+        } else {
+            $error = "Failed to start process";
+            $exitCode = 1;
+        }
+        
+        return [
+            'output' => $output,
+            'error' => $error,
+            'exitCode' => $exitCode,
+            'execution_time' => microtime(true) - $startTime,
         ];
     }
     
