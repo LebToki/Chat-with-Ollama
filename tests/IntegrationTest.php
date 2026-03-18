@@ -14,7 +14,7 @@ class IntegrationTest
     
     public function __construct()
     {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = \App\Database\Database::getInstance()->getConnection();
         $this->codeService = new \App\Services\CodeExecutionService();
         $this->ragService = new \App\Services\RAGService();
         $this->documentService = new \App\Services\DocumentService();

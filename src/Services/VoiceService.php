@@ -64,8 +64,12 @@ class VoiceService
         try {
             switch ($this->ttsProvider) {
                 case 'espeak':
+                    // Security Fix: Removed double quotes around the last %s argument.
+                    // escapeshellarg() returns a string surrounded by single quotes.
+                    // Placing it inside double quotes would allow bash to evaluate
+                    // command/variable substitutions inside the string.
                     $command = sprintf(
-                        'espeak -v %s -s 140 -p 50 -g 10 -w %s "%s"',
+                        'espeak -v %s -s 140 -p 50 -g 10 -w %s %s',
                         escapeshellarg($language),
                         escapeshellarg($filepath),
                         escapeshellarg($text)
