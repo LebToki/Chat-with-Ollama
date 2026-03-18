@@ -289,7 +289,7 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
         <div class="chat-sessions">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <span style="font-weight: 600; font-size: 14px; color: var(--text-secondary);">Recent Chats</span>
-                <button class="btn-icon" onclick="createNewChat()" style="width: 32px; height: 32px; font-size: 14px;">
+                <button class="btn-icon" onclick="createNewChat()" style="width: 32px; height: 32px; font-size: 14px;" aria-label="Create new chat">
                     <?php echo IconHelper::icon(IconHelper::getActionIcon('add')); ?>
                 </button>
             </div>
@@ -355,20 +355,20 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
         </div>
         <div class="header-actions" style="flex-shrink: 0;">
             <?php if ($isChatPage): ?>
-                <button class="btn-icon" onclick="openDocumentsModal()" title="Manage Documents">
+                <button class="btn-icon" onclick="openDocumentsModal()" title="Manage Documents" aria-label="Manage Documents">
                     <?php echo IconHelper::icon('mdi:folder-open'); ?>
                 </button>
-                <button class="btn-icon" onclick="toggleStreaming()" id="streaming-toggle" title="Toggle Streaming" data-streaming-enabled="true">
+                <button class="btn-icon" onclick="toggleStreaming()" id="streaming-toggle" title="Toggle Streaming" aria-label="Toggle Streaming" data-streaming-enabled="true">
                     <?php echo IconHelper::icon('hugeicons:live-streaming-02'); ?>
                 </button>
-                <button class="btn-icon" onclick="toggleAutoScroll()" id="auto-scroll-toggle" title="Toggle Auto-Scroll" data-auto-scroll-enabled="true">
+                <button class="btn-icon" onclick="toggleAutoScroll()" id="auto-scroll-toggle" title="Toggle Auto-Scroll" aria-label="Toggle Auto-Scroll" data-auto-scroll-enabled="true">
                     <?php echo IconHelper::icon('mdi:arrow-down-bold'); ?>
                 </button>
             <?php endif; ?>
-            <button class="btn-icon" onclick="syncModels()" title="Sync Local Models">
+            <button class="btn-icon" onclick="syncModels()" title="Sync Local Models" aria-label="Sync Local Models">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
             </button>
-            <button class="btn-icon" onclick="showKeyboardShortcuts()" title="Keyboard Shortcuts">
+            <button class="btn-icon" onclick="showKeyboardShortcuts()" title="Keyboard Shortcuts" aria-label="Keyboard Shortcuts">
                 <?php echo IconHelper::icon('mdi:keyboard'); ?>
             </button>
             <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>" target="_blank" class="btn-icon" title="View on GitHub" style="text-decoration: none; color: inherit;">
@@ -389,6 +389,6 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
     <div class="notification-container" id="notification-container"></div>
 
     <!-- Auto-Scroll Toggle Button -->
-    <button class="auto-scroll-toggle" id="auto-scroll-btn" onclick="toggleAutoScroll()" title="Auto-scroll to bottom">
+    <button class="auto-scroll-toggle" id="auto-scroll-btn" onclick="toggleAutoScroll()" title="Auto-scroll to bottom" aria-label="Auto-scroll to bottom">
         <iconify-icon icon="mdi:arrow-down-bold"></iconify-icon>
     </button>
