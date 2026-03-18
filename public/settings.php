@@ -73,7 +73,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                         <select id="settings-model-select" class="model-select" style="flex: 1;">
                             <option value="">Loading models...</option>
                         </select>
-                        <button class="btn-icon" onclick="syncModels()" title="Sync Models">
+                        <button class="btn-icon" onclick="syncModels()" title="Sync Models" aria-label="Sync Models">
                             <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
                         </button>
                     </div>
@@ -106,7 +106,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                         <select id="settings-model-select" class="model-select" style="flex: 1;">
                             <option value="">Loading models...</option>
                         </select>
-                        <button class="btn-icon" onclick="syncModels()" title="Sync Models">
+                        <button class="btn-icon" onclick="syncModels()" title="Sync Models" aria-label="Sync Models">
                             <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
                         </button>
                     </div>

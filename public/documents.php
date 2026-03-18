@@ -64,7 +64,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                     <option value="csv">CSV</option>
                     <option value="md">Markdown</option>
                 </select>
-                <button class="btn-icon" onclick="clearFilters()" title="Clear filters">
+                <button class="btn-icon" onclick="clearFilters()" title="Clear filters" aria-label="Clear filters">
                     <?php echo IconHelper::icon('mdi:filter-off'); ?>
                 </button>
             </div>
@@ -152,7 +152,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
     <div class="modal-content glass-card" style="max-width: 500px; margin: 50px auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h2 class="text-gradient">Rename Document</h2>
-            <button class="btn-icon" onclick="closeEditModal()">
+            <button class="btn-icon" onclick="closeEditModal()" aria-label="Close edit modal">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('close')); ?>
             </button>
         </div>
@@ -182,7 +182,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
     <div class="modal-content glass-card" style="max-width: 90vw; max-height: 90vh; margin: 20px auto; display: flex; flex-direction: column; overflow: hidden;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-shrink: 0;">
             <h2 class="text-gradient" id="preview-title">Document Preview</h2>
-            <button class="btn-icon" onclick="closePreviewModal()">
+            <button class="btn-icon" onclick="closePreviewModal()" aria-label="Close preview modal">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('close')); ?>
             </button>
         </div>
