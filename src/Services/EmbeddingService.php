@@ -62,10 +62,13 @@ class EmbeddingService
         $norm1 = 0;
         $norm2 = 0;
 
-        for ($i = 0; $i < count($embedding1); $i++) {
-            $dotProduct += $embedding1[$i] * $embedding2[$i];
-            $norm1 += $embedding1[$i] * $embedding1[$i];
-            $norm2 += $embedding2[$i] * $embedding2[$i];
+        // Optimized: using foreach avoids recalculating count() on every iteration
+        // and provides faster array traversal than index-based access
+        foreach ($embedding1 as $i => $val1) {
+            $val2 = $embedding2[$i];
+            $dotProduct += $val1 * $val2;
+            $norm1 += $val1 * $val1;
+            $norm2 += $val2 * $val2;
         }
 
         if ($norm1 == 0 || $norm2 == 0) {
