@@ -71,7 +71,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
         </div>
 
         <!-- Upload Zone (Collapsible) -->
-        <div class="glass-card" id="upload-zone" style="margin-bottom: 24px; padding: 32px; text-align: center; cursor: pointer; border: 2px dashed var(--glass-border); transition: all 0.3s;" onclick="document.getElementById('file-input').click()">
+        <div class="glass-card" id="upload-zone" style="margin-bottom: 24px; padding: 32px; text-align: center; cursor: pointer; border: 2px dashed var(--glass-border); transition: all 0.3s;" onclick="document.getElementById('file-input').click()" role="button" tabindex="0" aria-label="Upload document" onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); document.getElementById('file-input').click(); }">
             <?php echo IconHelper::icon(IconHelper::getActionIcon('upload'), '', 'font-size: 48px; color: var(--accent);'); ?>
             <p style="margin-top: 16px; font-weight: 600; color: var(--text-primary);">Drag & drop files here</p>
             <p style="margin-top: 8px; color: var(--text-secondary); font-size: 14px;">

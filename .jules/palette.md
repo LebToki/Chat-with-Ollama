@@ -1,0 +1,3 @@
+## 2024-05-24 - Drag and Drop Upload Zone Keyboard Accessibility
+**Learning:** Custom drag-and-drop file upload zones implemented as `<div>` elements with `onclick` handlers completely lack keyboard accessibility by default. Screen readers ignore them, and keyboard users cannot trigger them or tab to them.
+**Action:** Always ensure custom upload zones or clickable `<div>` elements get `role="button"`, `tabindex="0"`, an explicit `aria-label`, and `onkeydown` handlers that listen for 'Enter' or ' ' (Space) keys to programmatically trigger the underlying `<input type="file">`. Remember to also add `:focus-visible` styles to these elements so keyboard users know they are focused.
