@@ -74,7 +74,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
         </div>
         
         <div class="documents-panel">
-            <div class="upload-zone" id="upload-zone">
+            <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Upload document" onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); document.getElementById('file-input').click(); }">
                 <?php echo IconHelper::icon(IconHelper::getActionIcon('upload'), '', 'font-size: 48px; color: var(--accent);'); ?>
                 <p style="margin-top: 16px; font-weight: 600;">Drag & drop files here</p>
                 <p style="margin-top: 8px; color: var(--text-secondary); font-size: 14px;">
