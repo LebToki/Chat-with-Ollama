@@ -242,15 +242,15 @@ class CodeExecutionService
             escapeshellarg($tempFile)
         );
         
-        $output = shell_exec($command);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        $result = $this->executeWithTimeout($command, $this->timeout);
         
         unlink($tempFile);
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
@@ -268,15 +268,15 @@ class CodeExecutionService
             escapeshellarg($tempFile)
         );
         
-        $output = shell_exec($command);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        $result = $this->executeWithTimeout($command, $this->timeout);
         
         unlink($tempFile);
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
@@ -291,13 +291,13 @@ class CodeExecutionService
             escapeshellarg($code)
         );
         
-        $output = shell_exec($command);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        $result = $this->executeWithTimeout($command, $this->timeout);
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
@@ -315,15 +315,15 @@ class CodeExecutionService
             escapeshellarg($tempFile)
         );
         
-        $output = shell_exec($command);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        $result = $this->executeWithTimeout($command, $this->timeout);
         
         unlink($tempFile);
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
@@ -345,14 +345,14 @@ class CodeExecutionService
             $this->timeout
         );
         
-        $compileOutput = shell_exec($compileCommand);
+        $compileResult = $this->executeWithTimeout($compileCommand, $this->timeout);
         
-        if ($compileOutput !== null && strpos($compileOutput, 'error') !== false) {
+        if ($compileResult['exitCode'] !== 0 || strpos($compileResult['output'] . $compileResult['error'], 'error') !== false) {
             $this->cleanupTempDir($tempDir);
             return [
                 'success' => false,
                 'output' => '',
-                'error' => $compileOutput,
+                'error' => $compileResult['error'] ?: $compileResult['output'],
             ];
         }
         
@@ -363,15 +363,15 @@ class CodeExecutionService
             $this->timeout
         );
         
-        $output = shell_exec($execCommand);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        $result = $this->executeWithTimeout($execCommand, $this->timeout);
         
         $this->cleanupTempDir($tempDir);
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
@@ -393,14 +393,14 @@ class CodeExecutionService
             $this->timeout
         );
         
-        $compileOutput = shell_exec($compileCommand);
+        $compileResult = $this->executeWithTimeout($compileCommand, $this->timeout);
         
-        if ($compileOutput !== null && strpos($compileOutput, 'error') !== false) {
+        if ($compileResult['exitCode'] !== 0 || strpos($compileResult['output'] . $compileResult['error'], 'error') !== false) {
             $this->cleanupTempDir($tempDir);
             return [
                 'success' => false,
                 'output' => '',
-                'error' => $compileOutput,
+                'error' => $compileResult['error'] ?: $compileResult['output'],
             ];
         }
         
@@ -411,15 +411,15 @@ class CodeExecutionService
             $this->timeout
         );
         
-        $output = shell_exec($execCommand);
-        $exitCode = shell_exec(sprintf('echo $?'));
+        $result = $this->executeWithTimeout($execCommand, $this->timeout);
         
         $this->cleanupTempDir($tempDir);
         
         return [
-            'success' => $exitCode == 0,
-            'output' => $output ?? '',
-            'error' => $exitCode != 0 ? $output : '',
+            'success' => $result['exitCode'] == 0,
+            'output' => $result['output'] ?? '',
+            'error' => $result['error'] ?? '',
+            'execution_time' => $result['execution_time'] ?? 0,
         ];
     }
     
