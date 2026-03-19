@@ -45,6 +45,12 @@ class Database
 
     private function initializeSchema()
     {
+        // ⚡ Bolt: Use a static flag to avoid running queries multiple times per request if instance is re-created
+        static $initialized = false;
+        if ($initialized) {
+            return;
+        }
+
         $queries = [
             "CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,5 +131,7 @@ class Database
         foreach ($queries as $query) {
             $this->connection->exec($query);
         }
+
+        $initialized = true;
     }
 }
