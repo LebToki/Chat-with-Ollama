@@ -120,8 +120,12 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 </tbody>
             </table>
             </div>
-            <div id="table-empty" style="display: none; text-align: center; padding: 40px; color: var(--text-secondary);">
-                <p>No documents found</p>
+            <div id="table-empty" style="display: none; text-align: center; padding: 60px 40px; color: var(--text-secondary);">
+                <?php echo IconHelper::icon('mdi:file-document-outline', '', 'font-size: 48px; color: var(--text-secondary); opacity: 0.5; margin-bottom: 16px;'); ?>
+                <p style="font-size: 16px; margin-bottom: 24px;">No documents found</p>
+                <button class="btn-modern secondary" onclick="document.getElementById('file-input').click()" aria-label="Upload your first document" role="button">
+                    <?php echo IconHelper::icon(IconHelper::getActionIcon('upload')); ?> Upload First Document
+                </button>
             </div>
         </div>
 
