@@ -1,4 +1,4 @@
-## 2024-05-24 - [Command Injection via Double Quotes]
-**Vulnerability:** Critical command injection in VoiceService.php. The code used `escapeshellarg()` on user input but then wrapped the `%s` format specifier in double quotes (`"%s"`) in the `sprintf` command for `espeak`.
-**Learning:** `escapeshellarg()` wraps its output in single quotes. When placed inside double quotes in a shell command, Bash evaluates variable and command substitutions (e.g., `$(whoami)`) inside the string, defeating the purpose of escaping.
-**Prevention:** Never wrap `escapeshellarg()` output in double quotes when constructing shell commands. Ensure the escaped argument stands alone (e.g., `%s` instead of `"%s"`).
+## 2024-05-24 - ModelStatusController SSRF / Path Traversal
+**Vulnerability:** The `$model` parameter in `ModelStatusController.php` was taken directly from user input (`$_GET['model']`) and appended to an API URL without validation or sanitization, potentially allowing an attacker to inject path traversal characters (like `../`) and hit unintended endpoints via Server-Side Request Forgery.
+**Learning:** Even when hitting internal or trusted upstream APIs (like Ollama), user input appended to the path or body must be strictly validated. Guzzle handles requests reliably, but does not sanitize path inputs by default.
+**Prevention:** Always validate parameters against an expected allowlist or strict format regex (e.g., `^[a-zA-Z0-9\-_:\.]+$` for model names) before using them to construct upstream requests.

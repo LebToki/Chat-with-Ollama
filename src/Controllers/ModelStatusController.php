@@ -10,6 +10,13 @@ $jwtToken = $config['jwtToken'];
 
 $model = $_GET['model'] ?? 'llama3.2:latest';
 
+// Validate and sanitize the model parameter to prevent SSRF and Path Traversal
+if (!preg_match('/^[a-zA-Z0-9\-_:\.]+$/', $model)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid model name format.']);
+    exit;
+}
+
 $client = new Client([
     'base_uri' => $ollamaApiUrl,
     'timeout' => 30.0,
