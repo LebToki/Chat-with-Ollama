@@ -5,3 +5,7 @@
 ## 2026-03-19 - SQLite Database Initialization Static Check Optimization
 **Learning:** Re-running ~15 `CREATE IF NOT EXISTS` queries on every request adds measurable overhead, even if they do nothing. However, completely skipping the script if the main table exists might prevent migrations or new table creations from running.
 **Action:** Use a `static $initialized = false;` flag in `initializeSchema()` so the initialization code only runs once per PHP runtime process, rather than relying strictly on the database state.
+
+## 2026-03-19 - PHP Sorting Arrays (O(N log N) to O(N log K)) Optimization
+**Learning:** In `src/Services/RAGService.php`, computing embeddings for thousands of chunks and then pushing them all to an array before calling `usort()` and `array_slice()` to retrieve the top 5 chunks consumes significant memory and processing time `O(N log N)`.
+**Action:** Use `SplPriorityQueue` to maintain a bounded queue of size $K$ (e.g., $K=5$). This reduces the time complexity to `O(N log K)` and massively reduces memory overhead. Note that `SplPriorityQueue` behaves as a max-heap by default in PHP, so inserting elements with a negative similarity score (`-$similarity`) effectively makes it behave as a min-heap where `top()` returns the smallest element.
