@@ -134,25 +134,42 @@ class RAGService
             
             $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            $scoredChunks = [];
+            // ⚡ Bolt: Using SplPriorityQueue instead of sorting all elements reduces time complexity from O(N log N) to O(N log K)
+            // and significantly reduces memory usage since we only store the top K items.
+            $queue = new \SplPriorityQueue();
+            $queue->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
+
             foreach ($chunks as $chunk) {
                 $chunkEmbedding = json_decode($chunk['embedding'], true);
                 $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding);
                 
-                $scoredChunks[] = [
+                $item = [
                     'chunk_id' => $chunk['chunk_id'],
                     'content' => $chunk['content'],
                     'document_id' => $chunk['document_id'],
                     'filename' => $chunk['original_filename'],
                     'similarity' => $similarity
                 ];
+
+                // We use negative priority because SplPriorityQueue keeps largest elements at the top,
+                // and we want to pop the smallest element when the queue exceeds the limit.
+                if ($queue->count() < $limit) {
+                    $queue->insert($item, -$similarity);
+                } elseif ($similarity > $queue->top()['similarity']) {
+                    $queue->insert($item, -$similarity);
+                    if ($queue->count() > $limit) {
+                        $queue->extract(); // Remove the smallest element
+                    }
+                }
             }
             
-            usort($scoredChunks, function($a, $b) {
-                return $b['similarity'] <=> $a['similarity'];
-            });
+            // Extract the top K elements (they come out smallest first, so we reverse)
+            $result = [];
+            while (!$queue->isEmpty()) {
+                $result[] = $queue->extract();
+            }
             
-            return array_slice($scoredChunks, 0, $limit);
+            return array_reverse($result);
             
         } catch (Exception $e) {
             error_log("Chunk retrieval failed: " . $e->getMessage());
@@ -188,26 +205,38 @@ class RAGService
             
             $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Parallel similarity computation (using array_map for better performance)
-            $scoredChunks = array_map(function($chunk) use ($queryEmbedding) {
+            // ⚡ Bolt: Using SplPriorityQueue instead of array_map + usort + array_slice reduces
+            // time complexity from O(N log N) to O(N log K) and avoids allocating a large intermediate array.
+            $queue = new \SplPriorityQueue();
+            $queue->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
+
+            foreach ($chunks as $chunk) {
                 $chunkEmbedding = json_decode($chunk['embedding'], true);
                 $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding);
                 
-                return [
+                $item = [
                     'chunk_id' => $chunk['chunk_id'],
                     'content' => $chunk['content'],
                     'document_id' => $chunk['document_id'],
                     'filename' => $chunk['original_filename'],
                     'similarity' => $similarity
                 ];
-            }, $chunks);
+
+                if ($queue->count() < $limit) {
+                    $queue->insert($item, -$similarity);
+                } elseif ($similarity > $queue->top()['similarity']) {
+                    $queue->insert($item, -$similarity);
+                    if ($queue->count() > $limit) {
+                        $queue->extract();
+                    }
+                }
+            }
             
-            // Sort and limit
-            usort($scoredChunks, function($a, $b) {
-                return $b['similarity'] <=> $a['similarity'];
-            });
-            
-            $result = array_slice($scoredChunks, 0, $limit);
+            $result = [];
+            while (!$queue->isEmpty()) {
+                $result[] = $queue->extract();
+            }
+            $result = array_reverse($result);
             
             // Cache result (limit cache size)
             if (count($cache) > 100) {

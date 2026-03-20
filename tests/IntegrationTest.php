@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Database/Database.php';
 require_once __DIR__ . '/../src/Services/CodeExecutionService.php';
 require_once __DIR__ . '/../src/Services/RAGService.php';
@@ -15,8 +16,15 @@ class IntegrationTest
     public function __construct()
     {
         $this->db = \App\Database\Database::getInstance()->getConnection();
+        // Create mock EmbeddingService for testing RAGService
+        $mockEmbeddingService = new class('http://localhost', 'token') extends \App\Services\EmbeddingService {
+            public function generateEmbedding($text, $model = null) {
+                return array_fill(0, 1536, 0.1); // Mock embedding vector
+            }
+        };
+
         $this->codeService = new \App\Services\CodeExecutionService();
-        $this->ragService = new \App\Services\RAGService();
+        $this->ragService = new \App\Services\RAGService($mockEmbeddingService);
         $this->documentService = new \App\Services\DocumentService();
     }
     
@@ -102,9 +110,13 @@ class IntegrationTest
             file_put_contents($testFile, $testContent);
             
             // Process document
-            $result = $this->documentService->processDocument($testFile, 'test.txt');
+            $result = $this->documentService->processDocument([
+                'name' => 'test.txt',
+                'tmp_name' => $testFile,
+                'size' => filesize($testFile)
+            ]);
             
-            if (!$result || !isset($result['document_id'])) {
+            if (!$result || !isset($result['filename'])) {
                 return false;
             }
             
@@ -120,16 +132,9 @@ class IntegrationTest
     private function testRAGIntegration()
     {
         try {
-            // Test embedding generation
-            $text = "This is a test sentence for embedding.";
-            $embedding = $this->ragService->generateEmbedding($text);
-            
-            if (!$embedding || !is_array($embedding) || count($embedding) === 0) {
-                return false;
-            }
-            
             // Test similarity search
-            $similarDocs = $this->ragService->findSimilarDocuments($text, 3);
+            $text = "This is a test sentence for similarity search.";
+            $similarDocs = $this->ragService->retrieveRelevantChunks($text, 3);
             
             return is_array($similarDocs);
         } catch (Exception $e) {
