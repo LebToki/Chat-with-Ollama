@@ -223,7 +223,16 @@ class DocumentService
                 // Overlap: keep last N words
                 $overlapWords = array_slice($currentChunk, -$overlap);
                 $currentChunk = $overlapWords;
-                $currentLength = strlen(implode(' ', $overlapWords));
+
+                // ⚡ Bolt: Fast recalculation using a simple loop instead of imploding and strlen
+                // which creates unnecessary large temporary strings in memory on every overlap.
+                $currentLength = 0;
+                foreach ($overlapWords as $w) {
+                    $currentLength += strlen($w) + 1; // +1 for space
+                }
+                if ($currentLength > 0) {
+                    $currentLength -= 1; // Match `implode` behavior which doesn't add a trailing space
+                }
             }
             
             $currentChunk[] = $word;
