@@ -21,7 +21,8 @@ if (RequestHelper::isMethod('POST')) {
             }
             
             $file = $_FILES['document'];
-            $originalName = $file['name'];
+            // Security Fix: Prevent path traversal in file uploads
+            $originalName = basename($file['name']);
             $tempPath = $file['tmp_name'];
             
             // Validate file
@@ -69,7 +70,8 @@ if (RequestHelper::isMethod('POST')) {
             }
             
             $file = $_FILES['document'];
-            $originalName = $file['name'];
+            // Security Fix: Prevent path traversal
+            $originalName = basename($file['name']);
             $tempPath = $file['tmp_name'];
             
             $validation = $documentService->validateFile($tempPath, $originalName);
@@ -83,7 +85,8 @@ if (RequestHelper::isMethod('POST')) {
             }
             
             $file = $_FILES['document'];
-            $originalName = $file['name'];
+            // Security Fix: Prevent path traversal
+            $originalName = basename($file['name']);
             $tempPath = $file['tmp_name'];
             
             $validation = $documentService->validateFile($tempPath, $originalName);

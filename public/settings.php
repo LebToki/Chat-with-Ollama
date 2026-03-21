@@ -16,7 +16,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 <h2 style="margin-bottom: 24px; font-size: 20px;">Ollama Configuration</h2>
                 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <label for="ollama-cloud-mode" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
                         <input type="checkbox" id="ollama-cloud-mode" style="width: 20px; height: 20px; cursor: pointer;">
                         <span>Use Ollama Cloud API</span>
                     </label>
@@ -26,7 +26,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 </div>
                 
                 <div id="ollama-local-config" style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                    <label for="ollama-local-url" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
                         Local Ollama URL
                     </label>
                     <input type="text" id="ollama-local-url" class="model-select" style="width: 100%;" 
@@ -37,7 +37,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 </div>
                 
                 <div id="ollama-cloud-config" style="margin-bottom: 24px; display: none;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                    <label for="ollama-cloud-api-key" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
                         Cloud API Key
                     </label>
                     <input type="password" id="ollama-cloud-api-key" class="model-select" style="width: 100%;" 
@@ -66,7 +66,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 <h2 style="margin-bottom: 24px; font-size: 20px;">Model Configuration</h2>
                 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                    <label for="settings-model-select" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
                         Default Model
                     </label>
                     <div style="display: flex; gap: 12px;">
@@ -80,40 +80,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 </div>
                 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <input type="checkbox" id="rag-enabled" checked style="width: 20px; height: 20px; cursor: pointer;">
-                        <span>Enable RAG by default</span>
-                    </label>
-                    <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
-                        When enabled, the AI will automatically search your documents for relevant context.
-                    </p>
-                </div>
-                
-                <button class="btn-modern" onclick="saveSettings()">
-                    <?php echo IconHelper::icon(IconHelper::getActionIcon('save')); ?> Save Settings
-                </button>
-            </div>
-            
-            <!-- Middle Column: Date & Time Settings -->
-            <div class="glass-card">
-                <h2 style="margin-bottom: 24px; font-size: 20px;">Date & Time Format</h2>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
-                        Default Model
-                    </label>
-                    <div style="display: flex; gap: 12px;">
-                        <select id="settings-model-select" class="model-select" style="flex: 1;">
-                            <option value="">Loading models...</option>
-                        </select>
-                        <button class="btn-icon" onclick="syncModels()" title="Sync Models" aria-label="Sync Models">
-                            <?php echo IconHelper::icon(IconHelper::getActionIcon('sync')); ?>
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <label for="rag-enabled" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
                         <input type="checkbox" id="rag-enabled" checked style="width: 20px; height: 20px; cursor: pointer;">
                         <span>Enable RAG by default</span>
                     </label>
@@ -132,7 +99,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 <h2 style="margin-bottom: 24px; font-size: 20px;">Date & Time Format</h2>
                 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                    <label for="timezone-select" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
                         Timezone
                     </label>
                     <select id="timezone-select" class="model-select" style="width: 100%;">
@@ -144,7 +111,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 </div>
                 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                    <label for="date-format-select" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
                         Date Format
                     </label>
                     <select id="date-format-select" class="model-select" style="width: 100%;">
@@ -156,7 +123,7 @@ $companyUrl = $config['companyUrl'] ?? '{{COMPANY_URL}}';
                 </div>
                 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
+                    <label for="time-format-select" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary);">
                         Time Format
                     </label>
                     <select id="time-format-select" class="model-select" style="width: 100%;">
