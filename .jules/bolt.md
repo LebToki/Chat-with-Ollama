@@ -9,3 +9,6 @@
 ## 2026-03-19 - PHP Sorting Arrays (O(N log N) to O(N log K)) Optimization
 **Learning:** In `src/Services/RAGService.php`, computing embeddings for thousands of chunks and then pushing them all to an array before calling `usort()` and `array_slice()` to retrieve the top 5 chunks consumes significant memory and processing time `O(N log N)`.
 **Action:** Use `SplPriorityQueue` to maintain a bounded queue of size $K$ (e.g., $K=5$). This reduces the time complexity to `O(N log K)` and massively reduces memory overhead. Note that `SplPriorityQueue` behaves as a max-heap by default in PHP, so inserting elements with a negative similarity score (`-$similarity`) effectively makes it behave as a min-heap where `top()` returns the smallest element.
+## 2026-03-19 - Avoid `implode` for string length calculations
+**Learning:** Using `strlen(implode($delimiter, $array))` to calculate the size of a joined string allocates a new, potentially large string in memory just to count its characters. Inside a tight loop (e.g., text chunking where $overlap can be large), this causes severe performance degradation and memory churn.
+**Action:** Use a fast arithmetic loop to tally the string lengths manually (`sum(strlen($w) + 1) - 1`) instead of allocating a throwaway string. This maintains the exact behavior while dropping execution time drastically.
