@@ -1,3 +1,7 @@
 ## 2024-05-24 - Drag and Drop Upload Zone Keyboard Accessibility
 **Learning:** Custom drag-and-drop file upload zones implemented as `<div>` elements with `onclick` handlers completely lack keyboard accessibility by default. Screen readers ignore them, and keyboard users cannot trigger them or tab to them.
 **Action:** Always ensure custom upload zones or clickable `<div>` elements get `role="button"`, `tabindex="0"`, an explicit `aria-label`, and `onkeydown` handlers that listen for 'Enter' or ' ' (Space) keys to programmatically trigger the underlying `<input type="file">`. Remember to also add `:focus-visible` styles to these elements so keyboard users know they are focused.
+
+## 2024-05-28 - Missing `for` Attributes and Duplicated IDs in Forms
+**Learning:** A missing `for` attribute in a `<label>` severely degrades the screen reader experience, as the label is not semantically associated with its corresponding input element. In addition, duplicating DOM IDs (e.g., repeating a form component card) not only causes validation errors but creates critical functional bugs: JavaScript lookups like `document.getElementById()` will always return the first matching element, causing inputs in the duplicated sections to seemingly do nothing.
+**Action:** Always verify that every `<label>` explicitly uses a `for="[input-id]"` attribute that matches the `id` of its intended input. When reusing or duplicating form components, ensure that all `id` attributes remain unique across the entire document.
