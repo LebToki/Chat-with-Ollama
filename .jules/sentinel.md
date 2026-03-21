@@ -2,3 +2,8 @@
 **Vulnerability:** The `$model` parameter in `ModelStatusController.php` was taken directly from user input (`$_GET['model']`) and appended to an API URL without validation or sanitization, potentially allowing an attacker to inject path traversal characters (like `../`) and hit unintended endpoints via Server-Side Request Forgery.
 **Learning:** Even when hitting internal or trusted upstream APIs (like Ollama), user input appended to the path or body must be strictly validated. Guzzle handles requests reliably, but does not sanitize path inputs by default.
 **Prevention:** Always validate parameters against an expected allowlist or strict format regex (e.g., `^[a-zA-Z0-9\-_:\.]+$` for model names) before using them to construct upstream requests.
+
+## 2024-05-25 - Path Traversal in Document Upload
+**Vulnerability:** In `public/api/documents.php`, the file name was directly extracted using `$originalName = $_FILES['document']['name']` and subsequently used in the destination path for `move_uploaded_file()`. If an attacker uploaded a file named `../../shell.php`, the file would be saved outside the intended `uploads/` directory, causing a critical path traversal and arbitrary file upload vulnerability.
+**Learning:** `$_FILES['input_name']['name']` is entirely client-controlled and must never be trusted. When using it to construct file paths, it can lead to path traversal vulnerabilities if it contains `../` sequences.
+**Prevention:** Always sanitize the filename from `$_FILES` using `basename()` to strip any directory paths and ensure only the final filename is used.
