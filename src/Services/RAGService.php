@@ -139,9 +139,15 @@ class RAGService
             $queue = new \SplPriorityQueue();
             $queue->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
+            // ⚡ Bolt: Pre-calculate the norm of the query embedding to avoid 1536 redundant multiplications/additions per chunk
+            $queryNorm = 0;
+            foreach ($queryEmbedding as $val) {
+                $queryNorm += $val * $val;
+            }
+
             foreach ($chunks as $chunk) {
                 $chunkEmbedding = json_decode($chunk['embedding'], true);
-                $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding);
+                $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding, $queryNorm);
                 
                 $item = [
                     'chunk_id' => $chunk['chunk_id'],
@@ -210,9 +216,15 @@ class RAGService
             $queue = new \SplPriorityQueue();
             $queue->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 
+            // ⚡ Bolt: Pre-calculate the norm of the query embedding to avoid 1536 redundant multiplications/additions per chunk
+            $queryNorm = 0;
+            foreach ($queryEmbedding as $val) {
+                $queryNorm += $val * $val;
+            }
+
             foreach ($chunks as $chunk) {
                 $chunkEmbedding = json_decode($chunk['embedding'], true);
-                $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding);
+                $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding, $queryNorm);
                 
                 $item = [
                     'chunk_id' => $chunk['chunk_id'],
