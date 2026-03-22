@@ -52,23 +52,33 @@ class EmbeddingService
         }
     }
 
-    public function cosineSimilarity($embedding1, $embedding2)
+    public function cosineSimilarity($embedding1, $embedding2, $norm1 = null)
     {
         if (count($embedding1) !== count($embedding2)) {
             return 0;
         }
 
         $dotProduct = 0;
-        $norm1 = 0;
         $norm2 = 0;
 
         // Optimized: using foreach avoids recalculating count() on every iteration
-        // and provides faster array traversal than index-based access
-        foreach ($embedding1 as $i => $val1) {
-            $val2 = $embedding2[$i];
-            $dotProduct += $val1 * $val2;
-            $norm1 += $val1 * $val1;
-            $norm2 += $val2 * $val2;
+        // and provides faster array traversal than index-based access.
+        // ⚡ Bolt: If $norm1 is pre-calculated and passed, we skip calculating it again
+        // to save O(D) multiplications and additions per comparison.
+        if ($norm1 !== null) {
+            foreach ($embedding1 as $i => $val1) {
+                $val2 = $embedding2[$i];
+                $dotProduct += $val1 * $val2;
+                $norm2 += $val2 * $val2;
+            }
+        } else {
+            $norm1 = 0;
+            foreach ($embedding1 as $i => $val1) {
+                $val2 = $embedding2[$i];
+                $dotProduct += $val1 * $val2;
+                $norm1 += $val1 * $val1;
+                $norm2 += $val2 * $val2;
+            }
         }
 
         if ($norm1 == 0 || $norm2 == 0) {
