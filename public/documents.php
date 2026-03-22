@@ -740,16 +740,16 @@ function renderTable(documents) {
                 <td style="color: var(--text-secondary); font-size: 13px;">${uploadedDate}</td>
                 <td style="text-align: center;">
                     <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
-                            <a href="javascript:void(0)" class="action-btn action-btn-view" onclick="viewDocument(${doc.id})" title="View">
+                            <a href="javascript:void(0)" class="action-btn action-btn-view" onclick="viewDocument(${doc.id})" title="View" aria-label="View document">
                                 <iconify-icon icon="iconamoon:eye-light" style="font-size: 16px;"></iconify-icon>
                             </a>
-                            <a href="javascript:void(0)" class="action-btn action-btn-edit" onclick="editDocument(${doc.id})" title="Rename">
+                            <a href="javascript:void(0)" class="action-btn action-btn-edit" onclick="editDocument(${doc.id})" title="Rename" aria-label="Rename document">
                                 <iconify-icon icon="lucide:edit" style="font-size: 16px;"></iconify-icon>
                             </a>
-                            <a href="javascript:void(0)" class="action-btn action-btn-chat" onclick="startChatWithDocument(${doc.id}, '${escapeHtml(getFilenameWithoutExtension(doc.original_filename || ''))}')" title="Start Chat">
+                            <a href="javascript:void(0)" class="action-btn action-btn-chat" onclick="startChatWithDocument(${doc.id}, '${escapeHtml(getFilenameWithoutExtension(doc.original_filename || ''))}')" title="Start Chat" aria-label="Start chat with document">
                                 <iconify-icon icon="mdi:message-text" style="font-size: 16px;"></iconify-icon>
                             </a>
-                            <a href="javascript:void(0)" class="action-btn action-btn-delete" onclick="deleteDocument(${doc.id})" title="Delete">
+                            <a href="javascript:void(0)" class="action-btn action-btn-delete" onclick="deleteDocument(${doc.id})" title="Delete" aria-label="Delete document">
                                 <iconify-icon icon="mingcute:delete-2-line" style="font-size: 16px;"></iconify-icon>
                             </a>
                     </div>
