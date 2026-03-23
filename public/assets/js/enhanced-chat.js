@@ -310,6 +310,7 @@ function addMessageActions(messageElement, messageId, content, role) {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'message-action-btn';
     copyBtn.title = 'Copy message';
+    copyBtn.setAttribute('aria-label', 'Copy message');
     copyBtn.innerHTML = IconHelper.icon('mdi:content-copy');
     copyBtn.onclick = function() {
         copyToClipboard(content, copyBtn);
@@ -320,6 +321,7 @@ function addMessageActions(messageElement, messageId, content, role) {
         const editBtn = document.createElement('button');
         editBtn.className = 'message-action-btn';
         editBtn.title = 'Edit message';
+        editBtn.setAttribute('aria-label', 'Edit message');
         editBtn.innerHTML = IconHelper.icon('mdi:pencil');
         editBtn.onclick = function() {
             editMessage(messageElement, messageId, content);
@@ -332,6 +334,7 @@ function addMessageActions(messageElement, messageId, content, role) {
         const regenerateBtn = document.createElement('button');
         regenerateBtn.className = 'message-action-btn';
         regenerateBtn.title = 'Regenerate response';
+        regenerateBtn.setAttribute('aria-label', 'Regenerate response');
         regenerateBtn.innerHTML = IconHelper.icon('mdi:refresh');
         regenerateBtn.onclick = function() {
             regenerateMessage(messageId);
@@ -476,7 +479,7 @@ function addCodeBlockCopyButton(codeBlock) {
     
     header.innerHTML = `
         <span class="code-block-language">${language}</span>
-        <button class="code-block-copy" title="Copy code">
+        <button class="code-block-copy" title="Copy code" aria-label="Copy code block">
             ${IconHelper.icon('mdi:content-copy')}
         </button>
     `;
@@ -502,8 +505,8 @@ function initializeSearch() {
     searchBar.className = 'search-bar';
     searchBar.innerHTML = `
         <iconify-icon icon="mdi:magnify" class="search-icon"></iconify-icon>
-        <input type="text" id="chat-search" class="search-input" placeholder="Search chats...">
-        <button class="search-clear" onclick="clearSearch()">
+        <input type="text" id="chat-search" class="search-input" placeholder="Search chats..." aria-label="Search chat sessions">
+        <button class="search-clear" onclick="clearSearch()" aria-label="Clear search">
             ${IconHelper.icon('mdi:close')}
         </button>
     `;
@@ -552,6 +555,7 @@ function initializeExport() {
     const exportBtn = document.createElement('button');
     exportBtn.className = 'btn-icon';
     exportBtn.title = 'Export chat';
+    exportBtn.setAttribute('aria-label', 'Export chat session');
     exportBtn.innerHTML = IconHelper.icon('mdi:download');
     exportBtn.onclick = function(e) {
         e.stopPropagation();
@@ -717,7 +721,7 @@ function showEnhancedNotification(message, type = 'info', duration = 4000) {
             <div class="notification-title">${titles[type] || titles.info}</div>
             <div class="notification-message">${message}</div>
         </div>
-        <button class="notification-close" onclick="this.parentElement.remove()">
+        <button class="notification-close" onclick="this.parentElement.remove()" aria-label="Close notification">
             ${IconHelper.icon('mdi:close')}
         </button>
     `;

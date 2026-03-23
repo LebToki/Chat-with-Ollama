@@ -353,7 +353,7 @@ function updateFilePreview() {
                 <span style="font-size: 14px;">${
                 file.name
             }</span>
-                <button onclick="removeFile(${ index })" style="background: none; border: none; color: var(--danger); margin-left: 8px; cursor: pointer;">
+                <button onclick="removeFile(${ index })" style="background: none; border: none; color: var(--danger); margin-left: 8px; cursor: pointer;" aria-label="Remove attached file">
                     ${
                 IconHelper.icon( IconHelper.getActionIcon( 'close' ) )
             }
@@ -1078,7 +1078,7 @@ function renderDocuments( documents ) {
         }
             <button class="btn-icon" onclick="deleteDocument(${
             doc.id
-        })" style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px;">
+        })" style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px;" aria-label="Delete document">
                 ${
             IconHelper.icon( IconHelper.getActionIcon( 'delete' ) )
         }
