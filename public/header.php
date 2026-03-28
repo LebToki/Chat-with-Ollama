@@ -371,7 +371,7 @@ $debugAssets = isset($_GET['debug']) && $_GET['debug'] === 'assets';
             <button class="btn-icon" onclick="showKeyboardShortcuts()" title="Keyboard Shortcuts" aria-label="Keyboard Shortcuts">
                 <?php echo IconHelper::icon('mdi:keyboard'); ?>
             </button>
-            <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>" target="_blank" class="btn-icon" title="View on GitHub" style="text-decoration: none; color: inherit;">
+            <a href="https://github.com/<?php echo htmlspecialchars($githubUsername); ?>/<?php echo htmlspecialchars($githubRepo); ?>" target="_blank" class="btn-icon" title="View on GitHub" aria-label="View on GitHub" style="text-decoration: none; color: inherit;">
                 <?php echo IconHelper::icon('mdi:github'); ?>
             </a>
         </div>
