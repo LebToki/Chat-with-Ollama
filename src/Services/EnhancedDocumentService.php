@@ -40,13 +40,13 @@ class EnhancedDocumentService extends DocumentService
         }
         
         // DOCX extractor using PHPWord
-        if (class_exists('PhpOffice\\PhpWord\\IOFactory')) {
+        if (class_exists('PhpOffice\PhpWord\IOFactory')) {
             $this->textExtractors['docx'] = [$this, 'extractDOCX'];
             $this->textExtractors['doc'] = [$this, 'extractDOC'];
         }
         
         // EPUB extractor
-        if (class_exists('Easybook\\Libraries\\Epub\\Epub')) {
+        if (class_exists('Easybook\Libraries\Epub\Epub')) {
             $this->textExtractors['epub'] = [$this, 'extractEPUB'];
         }
         
@@ -190,7 +190,7 @@ class EnhancedDocumentService extends DocumentService
     private function extractPDFWithLibrary(string $filePath): string
     {
         try {
-            $parser = new \Smalot\\PdfParser\\Parser();
+            $parser = new \Smalot\PdfParser\Parser();
             $pdf = $parser->parseFile($filePath);
             return $pdf->getText();
         } catch (Exception $e) {
@@ -204,7 +204,7 @@ class EnhancedDocumentService extends DocumentService
     private function extractDOCX(string $filePath): string
     {
         try {
-            $phpWord = \PhpOffice\\PhpWord\\IOFactory::load($filePath);
+            $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
             $text = '';
             
             foreach ($phpWord->getSections() as $section) {
@@ -235,7 +235,7 @@ class EnhancedDocumentService extends DocumentService
     private function extractEPUB(string $filePath): string
     {
         try {
-            $epub = new \Easybook\\Libraries\\Epub\\Epub();
+            $epub = new \Easybook\Libraries\Epub\Epub();
             $epub->open($filePath);
             
             $text = '';
@@ -360,7 +360,7 @@ class EnhancedDocumentService extends DocumentService
     private function getDocMetadata(string $filePath): array
     {
         try {
-            $phpWord = \PhpOffice\\PhpWord\\IOFactory::load($filePath);
+            $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
             $docProps = $phpWord->getDocInfo();
             
             return [
@@ -382,7 +382,7 @@ class EnhancedDocumentService extends DocumentService
     private function getEPUBMetadata(string $filePath): array
     {
         try {
-            $epub = new \Easybook\\Libraries\\Epub\\Epub();
+            $epub = new \Easybook\Libraries\Epub\Epub();
             $epub->open($filePath);
             
             return [

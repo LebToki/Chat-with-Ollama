@@ -262,8 +262,9 @@ class CodeExecutionService
         $tempFile = tempnam(sys_get_temp_dir(), 'php_');
         file_put_contents($tempFile, '<?php ' . $code);
         
+        // 🛡️ Sentinel: Disable dangerous functions to prevent RCE bypass
         $command = sprintf(
-            'timeout %d php %s 2>&1',
+            'timeout %d php -d disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source %s 2>&1',
             $this->timeout,
             escapeshellarg($tempFile)
         );
