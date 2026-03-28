@@ -114,8 +114,10 @@ class RAGService
             $queryEmbedding = $this->embeddingService->generateEmbedding($query);
             
             // Build query with optional document filter
+            // ⚡ Bolt: Fetching large string content during the initial nearest-neighbor search causes massive memory/IO overhead.
+            // Phase 1 only fetches chunk_id and embedding.
             $sql = "
-                SELECT ec.id, ec.chunk_id, ec.embedding, ec.model_name, dc.content, dc.document_id, d.original_filename
+                SELECT ec.chunk_id, ec.embedding
                 FROM embeddings ec
                 JOIN document_chunks dc ON ec.chunk_id = dc.id
                 JOIN documents d ON dc.document_id = d.id
@@ -146,14 +148,14 @@ class RAGService
             }
 
             foreach ($chunks as $chunk) {
-                $chunkEmbedding = json_decode($chunk['embedding'], true);
+                // ⚡ Bolt: Fast parsing of flat JSON arrays.
+                $str = substr($chunk['embedding'], 1, -1);
+                $chunkEmbedding = explode(',', $str);
+
                 $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding, $queryNorm);
                 
                 $item = [
                     'chunk_id' => $chunk['chunk_id'],
-                    'content' => $chunk['content'],
-                    'document_id' => $chunk['document_id'],
-                    'filename' => $chunk['original_filename'],
                     'similarity' => $similarity
                 ];
 
@@ -170,12 +172,51 @@ class RAGService
             }
             
             // Extract the top K elements (they come out smallest first, so we reverse)
-            $result = [];
+            $topItems = [];
             while (!$queue->isEmpty()) {
-                $result[] = $queue->extract();
+                $topItems[] = $queue->extract();
+            }
+            $topItems = array_reverse($topItems);
+
+            if (empty($topItems)) {
+                return [];
+            }
+
+            // ⚡ Bolt: Phase 2 fetches the heavy content only for the top K matched chunks.
+            $topChunkIds = array_column($topItems, 'chunk_id');
+            $placeholders = implode(',', array_fill(0, count($topChunkIds), '?'));
+            $sqlPhase2 = "
+                SELECT ec.chunk_id, dc.content, dc.document_id, d.original_filename
+                FROM embeddings ec
+                JOIN document_chunks dc ON ec.chunk_id = dc.id
+                JOIN documents d ON dc.document_id = d.id
+                WHERE ec.chunk_id IN ($placeholders)
+            ";
+            $stmtPhase2 = $this->db->prepare($sqlPhase2);
+            $stmtPhase2->execute($topChunkIds);
+            $detailedChunks = $stmtPhase2->fetchAll(PDO::FETCH_ASSOC);
+
+            // Map the details back into the sorted results
+            $detailsMap = [];
+            foreach ($detailedChunks as $detail) {
+                $detailsMap[$detail['chunk_id']] = $detail;
+            }
+
+            $result = [];
+            foreach ($topItems as $item) {
+                $chunkId = $item['chunk_id'];
+                if (isset($detailsMap[$chunkId])) {
+                    $result[] = [
+                        'chunk_id' => $chunkId,
+                        'content' => $detailsMap[$chunkId]['content'],
+                        'document_id' => $detailsMap[$chunkId]['document_id'],
+                        'filename' => $detailsMap[$chunkId]['original_filename'],
+                        'similarity' => $item['similarity']
+                    ];
+                }
             }
             
-            return array_reverse($result);
+            return $result;
             
         } catch (Exception $e) {
             error_log("Chunk retrieval failed: " . $e->getMessage());
@@ -200,8 +241,9 @@ class RAGService
             
             // Optimized query with LIMIT to reduce memory usage
             // Use vector similarity approximation if available, otherwise fetch all and compute
+            // ⚡ Bolt: Phase 1 only fetches chunk_id and embedding.
             $stmt = $this->db->query("
-                SELECT ec.id, ec.chunk_id, ec.embedding, ec.model_name, dc.content, dc.document_id, d.original_filename
+                SELECT ec.chunk_id, ec.embedding
                 FROM embeddings ec
                 JOIN document_chunks dc ON ec.chunk_id = dc.id
                 JOIN documents d ON dc.document_id = d.id
@@ -223,14 +265,14 @@ class RAGService
             }
 
             foreach ($chunks as $chunk) {
-                $chunkEmbedding = json_decode($chunk['embedding'], true);
+                // ⚡ Bolt: Fast parsing of flat JSON arrays.
+                $str = substr($chunk['embedding'], 1, -1);
+                $chunkEmbedding = explode(',', $str);
+
                 $similarity = $this->embeddingService->cosineSimilarity($queryEmbedding, $chunkEmbedding, $queryNorm);
                 
                 $item = [
                     'chunk_id' => $chunk['chunk_id'],
-                    'content' => $chunk['content'],
-                    'document_id' => $chunk['document_id'],
-                    'filename' => $chunk['original_filename'],
                     'similarity' => $similarity
                 ];
 
@@ -244,11 +286,46 @@ class RAGService
                 }
             }
             
-            $result = [];
+            $topItems = [];
             while (!$queue->isEmpty()) {
-                $result[] = $queue->extract();
+                $topItems[] = $queue->extract();
             }
-            $result = array_reverse($result);
+            $topItems = array_reverse($topItems);
+
+            $result = [];
+            if (!empty($topItems)) {
+                // ⚡ Bolt: Phase 2 fetches the heavy content only for the top K matched chunks.
+                $topChunkIds = array_column($topItems, 'chunk_id');
+                $placeholders = implode(',', array_fill(0, count($topChunkIds), '?'));
+                $sqlPhase2 = "
+                    SELECT ec.chunk_id, dc.content, dc.document_id, d.original_filename
+                    FROM embeddings ec
+                    JOIN document_chunks dc ON ec.chunk_id = dc.id
+                    JOIN documents d ON dc.document_id = d.id
+                    WHERE ec.chunk_id IN ($placeholders)
+                ";
+                $stmtPhase2 = $this->db->prepare($sqlPhase2);
+                $stmtPhase2->execute($topChunkIds);
+                $detailedChunks = $stmtPhase2->fetchAll(PDO::FETCH_ASSOC);
+
+                $detailsMap = [];
+                foreach ($detailedChunks as $detail) {
+                    $detailsMap[$detail['chunk_id']] = $detail;
+                }
+
+                foreach ($topItems as $item) {
+                    $chunkId = $item['chunk_id'];
+                    if (isset($detailsMap[$chunkId])) {
+                        $result[] = [
+                            'chunk_id' => $chunkId,
+                            'content' => $detailsMap[$chunkId]['content'],
+                            'document_id' => $detailsMap[$chunkId]['document_id'],
+                            'filename' => $detailsMap[$chunkId]['original_filename'],
+                            'similarity' => $item['similarity']
+                        ];
+                    }
+                }
+            }
             
             // Cache result (limit cache size)
             if (count($cache) > 100) {

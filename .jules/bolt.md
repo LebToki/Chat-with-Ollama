@@ -12,3 +12,11 @@
 ## 2026-03-19 - Avoid `implode` for string length calculations
 **Learning:** Using `strlen(implode($delimiter, $array))` to calculate the size of a joined string allocates a new, potentially large string in memory just to count its characters. Inside a tight loop (e.g., text chunking where $overlap can be large), this causes severe performance degradation and memory churn.
 **Action:** Use a fast arithmetic loop to tally the string lengths manually (`sum(strlen($w) + 1) - 1`) instead of allocating a throwaway string. This maintains the exact behavior while dropping execution time drastically.
+
+## 2026-03-21 - RAG Retrieval 2-Phase Query Optimization
+**Learning:** Fetching large string content (e.g., `dc.content`) alongside vector embeddings for thousands of rows during the initial nearest-neighbor search causes massive memory/IO overhead, especially when 99% of that data will be discarded after sorting.
+**Action:** Use a 2-phase approach for RAG retrieval. Phase 1 fetches only lightweight columns (`chunk_id`, `embedding`) for all matching rows to calculate similarities. Phase 2 fetches the heavy payload (`content`, `filename`) *only* for the top K matching `chunk_id`s, significantly reducing memory consumption and query latency.
+
+## 2026-03-21 - Fast JSON Array Parsing Optimization
+**Learning:** For extremely simple, flat numerical arrays stored as JSON strings (like `[0.1,0.2,-0.5]`), using `json_decode()` introduces significant parser overhead when executed thousands of times.
+**Action:** Instead of `json_decode()`, use `explode(',', substr($jsonString, 1, -1))` to quickly split the string. PHP's implicit type juggling handles the resulting strings as floats during mathematical operations, providing a measurable performance boost in tight loops like cosine similarity calculations.
